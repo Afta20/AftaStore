@@ -96,6 +96,10 @@ const config: Config = {
         DEFAULT: "#F27430",
         dark: "#E1580E",
       },
+      whatsapp: {
+        DEFAULT: "#25D366",
+        dark: "#128C7E",
+      },
     },
     screens: {
       xsm: "375px",
