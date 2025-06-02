@@ -1,6 +1,7 @@
 // File: src/app/api/auth/[...nextauth]/route.js
 
 import NextAuth from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import prisma from "@/lib/prisma"; // Impor instance prisma kita
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -107,6 +108,6 @@ export const authOptions = {
   // debug: process.env.NODE_ENV === 'development', // Uncomment untuk debugging saat development
 };
 
-const handler = NextAuth.default(authOptions);
+const handler = NextAuth && NextAuth.default ? NextAuth.default(authOptions) : NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
