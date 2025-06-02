@@ -36,7 +36,7 @@ const ShopWithoutSidebar = () => {
             <div className="w-full">
               {query && (
   <p className="text-sm text-gray-600 mb-4">
-   Showing <strong>{filteredData.length}</strong> result{filteredData.length !== 1 && "s"} for &quot;<strong>{query}</strong>&quot;
+Showing <strong>{filteredData.length}</strong> result{filteredData.length !== 1 && "s"} for &quot;<strong>{query}</strong>&quot;
   </p>
 )}
               <div className="rounded-lg bg-white shadow-1 pl-3 pr-2.5 py-2.5 mb-6">
