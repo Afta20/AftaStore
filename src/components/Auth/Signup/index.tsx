@@ -1,8 +1,58 @@
+"use client";
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import axios from 'axios';
 import Breadcrumb from "@/components/Common/Breadcrumb";
-import Link from "next/link";
-import React from "react";
 
 const Signup = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    reTypePassword: '',
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    // Validate password match
+    if (formData.password !== formData.reTypePassword) {
+      setError("Passwords don't match");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.post('/api/auth/signup', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (response.status === 201) {
+        router.push('/signin');
+      }
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      setError(error.response?.data?.message || 'Registration failed');
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Breadcrumb title={"Signup"} pages={["Signup"]} />
@@ -16,68 +66,52 @@ const Signup = () => {
               <p>Enter your detail below</p>
             </div>
 
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-5" role="alert">
+                <span className="block sm:inline">{error}</span>
+              </div>
+            )}
+
             <div className="flex flex-col gap-4.5">
-              <button className="flex justify-center items-center gap-3.5 rounded-lg border border-gray-3 bg-gray-1 p-3 ease-out duration-200 hover:bg-gray-2">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g clipPath="url(#clip0_98_7461)">
-                    <mask
-                      id="mask0_98_7461"
-                      maskUnits="userSpaceOnUse"
-                      x="0"
-                      y="0"
-                      width="20"
-                      height="20"
-                    >
-                      <path d="M20 0H0V20H20V0Z" fill="white" />
-                    </mask>
-                    <g mask="url(#mask0_98_7461)">
-                      <path
-                        d="M19.999 10.2218C20.0111 9.53429 19.9387 8.84791 19.7834 8.17737H10.2031V11.8884H15.8267C15.7201 12.5391 15.4804 13.162 15.1219 13.7195C14.7634 14.2771 14.2935 14.7578 13.7405 15.1328L13.7209 15.2571L16.7502 17.5568L16.96 17.5774C18.8873 15.8329 19.999 13.2661 19.999 10.2218Z"
-                        fill="#4285F4"
-                      />
-                      <path
-                        d="M10.2036 20C12.9586 20 15.2715 19.1111 16.9609 17.5777L13.7409 15.1332C12.8793 15.7223 11.7229 16.1333 10.2036 16.1333C8.91317 16.126 7.65795 15.7206 6.61596 14.9746C5.57397 14.2287 4.79811 13.1802 4.39848 11.9777L4.2789 11.9877L1.12906 14.3766L1.08789 14.4888C1.93622 16.1457 3.23812 17.5386 4.84801 18.512C6.45791 19.4852 8.31194 20.0005 10.2036 20Z"
-                        fill="#34A853"
-                      />
-                      <path
-                        d="M4.39899 11.9776C4.1758 11.3411 4.06063 10.673 4.05807 9.9999C4.06218 9.3279 4.1731 8.66067 4.38684 8.02221L4.38115 7.88959L1.1927 5.46234L1.0884 5.51095C0.372762 6.90337 0 8.44075 0 9.99983C0 11.5589 0.372762 13.0962 1.0884 14.4887L4.39899 11.9776Z"
-                        fill="#FBBC05"
-                      />
-                      <path
-                        d="M10.2039 3.86663C11.6661 3.84438 13.0802 4.37803 14.1495 5.35558L17.0294 2.59997C15.1823 0.90185 12.7364 -0.0298855 10.2039 -3.67839e-05C8.31239 -0.000477835 6.45795 0.514733 4.84805 1.48799C3.23816 2.46123 1.93624 3.85417 1.08789 5.51101L4.38751 8.02225C4.79107 6.82005 5.5695 5.77231 6.61303 5.02675C7.65655 4.28119 8.91254 3.87541 10.2039 3.86663Z"
-                        fill="#EB4335"
-                      />
-                    </g>
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_98_7461">
-                      <rect width="20" height="20" fill="white" />
-                    </clipPath>
-                  </defs>
-                </svg>
-                Sign Up with Google
+              <button 
+              type="button"
+              onClick={() => ('google')}
+              className="flex justify-center items-center gap-3.5 rounded-lg border border-gray-3 bg-gray-1 p-3 ease-out duration-200 hover:bg-gray-2"
+              >
+              {/* Google SVG icon */}
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 48 48"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g>
+                <path fill="#4285F4" d="M43.6 20.5h-1.9V20H24v8h11.3c-1.6 4.3-5.7 7-11.3 7-6.6 0-12-5.4-12-12s5.4-12 12-12c2.6 0 5 .8 7 2.3l6-6C34.1 5.1 29.3 3 24 3 12.9 3 4 11.9 4 23s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.3-3.5z"/>
+                <path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.3 16.1 18.8 13 24 13c2.6 0 5 .8 7 2.3l6-6C34.1 5.1 29.3 3 24 3c-7.7 0-14.3 4.3-17.7 10.7z"/>
+                <path fill="#FBBC05" d="M24 43c5.3 0 10.1-1.7 13.7-4.7l-6.3-5.2C29.2 34.7 26.7 35.5 24 35.5c-5.6 0-10.3-3.7-12-8.7l-6.6 5.1C9.7 39.1 16.3 43 24 43z"/>
+                <path fill="#EA4335" d="M43.6 20.5h-1.9V20H24v8h11.3c-1.1 3-3.3 5.5-6.3 7.1l6.3 5.2C39.7 38.1 44 32.7 44 24c0-1.3-.1-2.7-.4-3.5z"/>
+                </g>
+              </svg>
+              Sign Up with Google
               </button>
 
-              <button className="flex justify-center items-center gap-3.5 rounded-lg border border-gray-3 bg-gray-1 p-3 ease-out duration-200 hover:bg-gray-2">
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 22 22"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M10.9997 1.83331C5.93773 1.83331 1.83301 6.04119 1.83301 11.232C1.83301 15.3847 4.45954 18.9077 8.10178 20.1505C8.55988 20.2375 8.72811 19.9466 8.72811 19.6983C8.72811 19.4743 8.71956 18.7338 8.71567 17.9485C6.16541 18.517 5.6273 16.8395 5.6273 16.8395C5.21032 15.7532 4.60951 15.4644 4.60951 15.4644C3.77785 14.8811 4.6722 14.893 4.6722 14.893C5.59272 14.9593 6.07742 15.8615 6.07742 15.8615C6.89499 17.2984 8.22184 16.883 8.74493 16.6429C8.82718 16.0353 9.06478 15.6208 9.32694 15.3861C7.2909 15.1484 5.15051 14.3425 5.15051 10.7412C5.15051 9.71509 5.5086 8.87661 6.09503 8.21844C5.99984 7.98167 5.68611 7.02577 6.18382 5.73115C6.18382 5.73115 6.95358 5.47855 8.70532 6.69458C9.43648 6.48627 10.2207 6.3819 10.9997 6.37836C11.7787 6.3819 12.5635 6.48627 13.2961 6.69458C15.0457 5.47855 15.8145 5.73115 15.8145 5.73115C16.3134 7.02577 15.9995 7.98167 15.9043 8.21844C16.4921 8.87661 16.8477 9.715 16.8477 10.7412C16.8477 14.351 14.7033 15.146 12.662 15.3786C12.9909 15.6702 13.2838 16.2423 13.2838 17.1191C13.2838 18.3766 13.2732 19.3888 13.2732 19.6983C13.2732 19.9485 13.4382 20.2415 13.9028 20.1492C17.5431 18.905 20.1663 15.3833 20.1663 11.232C20.1663 6.04119 16.0621 1.83331 10.9997 1.83331Z"
-                    fill="#15171A"
-                  />
-                </svg>
-                Sign Up with Github
+              <button 
+              type="button"
+              onClick={() => ('github')}
+              className="flex justify-center items-center gap-3.5 rounded-lg border border-gray-3 bg-gray-1 p-3 ease-out duration-200 hover:bg-gray-2"
+              >
+              {/* GitHub SVG icon */}
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.49 2.87 8.3 6.84 9.64.5.09.68-.22.68-.48 0-.24-.01-.87-.01-1.7-2.78.62-3.37-1.36-3.37-1.36-.45-1.17-1.1-1.48-1.1-1.48-.9-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05A9.38 9.38 0 0 1 12 6.84c.85.004 1.71.12 2.51.35 1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.07.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.58.69.48A10.01 10.01 0 0 0 22 12.26C22 6.58 17.52 2 12 2z"/>
+              </svg>
+              Sign Up with Github
               </button>
             </div>
 
@@ -87,7 +121,7 @@ const Signup = () => {
             </span>
 
             <div className="mt-5.5">
-              <form>
+              <form onSubmit={handleSubmit}>
                 <div className="mb-5">
                   <label htmlFor="name" className="block mb-2.5">
                     Full Name <span className="text-red">*</span>
@@ -99,6 +133,9 @@ const Signup = () => {
                     id="name"
                     placeholder="Enter your full name"
                     className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
 
@@ -113,6 +150,9 @@ const Signup = () => {
                     id="email"
                     placeholder="Enter your email address"
                     className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
 
@@ -128,29 +168,36 @@ const Signup = () => {
                     placeholder="Enter your password"
                     autoComplete="on"
                     className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
 
                 <div className="mb-5.5">
-                  <label htmlFor="re-type-password" className="block mb-2.5">
+                  <label htmlFor="reTypePassword" className="block mb-2.5">
                     Re-type Password <span className="text-red">*</span>
                   </label>
 
                   <input
                     type="password"
-                    name="re-type-password"
-                    id="re-type-password"
+                    name="reTypePassword"
+                    id="reTypePassword"
                     placeholder="Re-type your password"
                     autoComplete="on"
                     className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                    value={formData.reTypePassword}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
 
                 <button
                   type="submit"
+                  disabled={loading}
                   className="w-full flex justify-center font-medium text-white bg-dark py-3 px-6 rounded-lg ease-out duration-200 hover:bg-blue mt-7.5"
                 >
-                  Create Account
+                  {loading ? 'Creating account...' : 'Create Account'}
                 </button>
 
                 <p className="text-center mt-6">

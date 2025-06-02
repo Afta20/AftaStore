@@ -9,13 +9,14 @@ import { useSelector } from "react-redux";
 import { selectTotalPrice } from "@/redux/features/cart-slice";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import Image from "next/image";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
   const { openCartModal } = useCartModalContext();
-
+  const { data: session } = useSession();
   const product = useAppSelector((state) => state.cartReducer.items);
   const totalPrice = useSelector(selectTotalPrice);
 
@@ -72,13 +73,20 @@ const Header = () => {
             </Link>
 
             <div className="max-w-[475px] w-full">
-              <form>
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      if (searchQuery.trim()) {
+        window.location.href = `/shop-without-sidebar?query=${encodeURIComponent(searchQuery.trim())}`;
+      }
+    }}
+  >
                 <div className="flex items-center">
                   <CustomSelect options={options} />
 
                   <div className="relative max-w-[333px] sm:min-w-[333px] w-full">
-                    {/* <!-- divider --> */}
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 inline-block w-px h-5.5 bg-gray-4"></span>
+
                     <input
                       onChange={(e) => setSearchQuery(e.target.value)}
                       value={searchQuery}
@@ -91,23 +99,12 @@ const Header = () => {
                     />
 
                     <button
+                      type="submit"
                       id="search-btn"
                       aria-label="Search"
                       className="flex items-center justify-center absolute right-3 top-1/2 -translate-y-1/2 ease-in duration-200 hover:text-blue"
                     >
-                      <svg
-                        className="fill-current"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 18 18"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M17.2687 15.6656L12.6281 11.8969C14.5406 9.28123 14.3437 5.5406 11.9531 3.1781C10.6875 1.91248 8.99995 1.20935 7.19995 1.20935C5.39995 1.20935 3.71245 1.91248 2.44683 3.1781C-0.168799 5.79373 -0.168799 10.0687 2.44683 12.6844C3.71245 13.95 5.39995 14.6531 7.19995 14.6531C8.91558 14.6531 10.5187 14.0062 11.7843 12.8531L16.4812 16.65C16.5937 16.7344 16.7343 16.7906 16.875 16.7906C17.0718 16.7906 17.2406 16.7062 17.3531 16.5656C17.5781 16.2844 17.55 15.8906 17.2687 15.6656ZM7.19995 13.3875C5.73745 13.3875 4.38745 12.825 3.34683 11.7844C1.20933 9.64685 1.20933 6.18748 3.34683 4.0781C4.38745 3.03748 5.73745 2.47498 7.19995 2.47498C8.66245 2.47498 10.0125 3.03748 11.0531 4.0781C13.1906 6.2156 13.1906 9.67498 11.0531 11.7844C10.0406 12.825 8.66245 13.3875 7.19995 13.3875Z"
-                          fill=""
-                        />
-                      </svg>
+                      {/* SVG ICON */}
                     </button>
                   </div>
                 </div>
@@ -148,7 +145,7 @@ const Header = () => {
                   24/7 SUPPORT
                 </span>
                 <p className="font-medium text-custom-sm text-dark">
-                  (+62) 1234-5678-90
+                  (+62)12345678
                 </p>
               </div>
             </div>
@@ -158,38 +155,56 @@ const Header = () => {
 
             <div className="flex w-full lg:w-auto justify-between items-center gap-5">
               <div className="flex items-center gap-5">
-                <Link href="/signin" className="flex items-center gap-2.5">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M12 1.25C9.37666 1.25 7.25001 3.37665 7.25001 6C7.25001 8.62335 9.37666 10.75 12 10.75C14.6234 10.75 16.75 8.62335 16.75 6C16.75 3.37665 14.6234 1.25 12 1.25ZM8.75001 6C8.75001 4.20507 10.2051 2.75 12 2.75C13.7949 2.75 15.25 4.20507 15.25 6C15.25 7.79493 13.7949 9.25 12 9.25C10.2051 9.25 8.75001 7.79493 8.75001 6Z"
-                      fill="#3C50E0"
-                    />
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M12 12.25C9.68646 12.25 7.55494 12.7759 5.97546 13.6643C4.4195 14.5396 3.25001 15.8661 3.25001 17.5L3.24995 17.602C3.24882 18.7638 3.2474 20.222 4.52642 21.2635C5.15589 21.7761 6.03649 22.1406 7.22622 22.3815C8.41927 22.6229 9.97424 22.75 12 22.75C14.0258 22.75 15.5808 22.6229 16.7738 22.3815C17.9635 22.1406 18.8441 21.7761 19.4736 21.2635C20.7526 20.222 20.7512 18.7638 20.7501 17.602L20.75 17.5C20.75 15.8661 19.5805 14.5396 18.0246 13.6643C16.4451 12.7759 14.3136 12.25 12 12.25ZM4.75001 17.5C4.75001 16.6487 5.37139 15.7251 6.71085 14.9717C8.02681 14.2315 9.89529 13.75 12 13.75C14.1047 13.75 15.9732 14.2315 17.2892 14.9717C18.6286 15.7251 19.25 16.6487 19.25 17.5C19.25 18.8078 19.2097 19.544 18.5264 20.1004C18.1559 20.4022 17.5365 20.6967 16.4762 20.9113C15.4193 21.1252 13.9742 21.25 12 21.25C10.0258 21.25 8.58075 21.1252 7.5238 20.9113C6.46354 20.6967 5.84413 20.4022 5.4736 20.1004C4.79033 19.544 4.75001 18.8078 4.75001 17.5Z"
-                      fill="#3C50E0"
-                    />
-                  </svg>
-
-                  <div>
-                    <span className="block text-2xs text-dark-4 uppercase">
-                      account
-                    </span>
-                    <p className="font-medium text-custom-sm text-dark">
-                      Sign In
-                    </p>
-                  </div>
-                </Link>
-
+          {session ? (
+            <div className="flex items-center gap-2.5">
+              {/* Icon Akun */}
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-dark"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
+                  fill="currentColor"
+                />
+              </svg>
+              <div>
+                <span className="block text-2xs text-dark-4 uppercase">Welcome</span>
+                <p className="font-medium text-custom-sm text-dark">
+                  {session.user?.name || session.user?.email}
+                </p>
+                <button
+                  onClick={() => signOut()}
+                  className="text-xs text-blue-600 underline mt-1"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Link href="/signin" className="flex items-center gap-2.5">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-dark"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
+                  fill="currentColor"
+                />
+              </svg>
+              <div>
+                <span className="block text-2xs text-dark-4 uppercase">Account</span>
+                <p className="font-medium text-custom-sm text-dark">Sign In</p>
+              </div>
+            </Link>
+          )}
                 <button
                   onClick={handleOpenCartModal}
                   className="flex items-center gap-2.5"

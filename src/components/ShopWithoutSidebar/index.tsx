@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
-
+import { useSearchParams } from "next/navigation";
 import SingleGridItem from "../Shop/SingleGridItem";
 import SingleListItem from "../Shop/SingleListItem";
 import CustomSelect from "../ShopWithSidebar/CustomSelect";
@@ -10,6 +10,12 @@ import shopData from "../Shop/shopData";
 
 const ShopWithoutSidebar = () => {
   const [productStyle, setProductStyle] = useState("grid");
+  const searchParams = useSearchParams();
+  const query = searchParams.get("query")?.toLowerCase() || "";
+    const filteredData = shopData.filter((item) =>
+    item.title.toLowerCase().includes(query)
+  );
+
 
   const options = [
     { label: "Latest Products", value: "0" },
@@ -28,6 +34,11 @@ const ShopWithoutSidebar = () => {
           <div className="flex gap-7.5">
             {/* // <!-- Content Start --> */}
             <div className="w-full">
+              {query && (
+  <p className="text-sm text-gray-600 mb-4">
+    Showing <strong>{filteredData.length}</strong> result{filteredData.length !== 1 && "s"} for "<strong>{query}</strong>"
+  </p>
+)}
               <div className="rounded-lg bg-white shadow-1 pl-3 pr-2.5 py-2.5 mb-6">
                 <div className="flex items-center justify-between">
                   {/* <!-- top bar left --> */}
@@ -129,13 +140,13 @@ const ShopWithoutSidebar = () => {
                     : "flex flex-col gap-7.5"
                 }`}
               >
-                {shopData.map((item, key) =>
-                  productStyle === "grid" ? (
-                    <SingleGridItem item={item} key={key} />
-                  ) : (
-                    <SingleListItem item={item} key={key} />
-                  )
-                )}
+                {filteredData.map((item, key) =>
+                    productStyle === "grid" ? (
+                      <SingleGridItem item={item} key={key} />
+                    ) : (
+                      <SingleListItem item={item} key={key} />
+                    )
+                  )}
               </div>
               {/* <!-- Products Grid Tab Content End --> */}
 
