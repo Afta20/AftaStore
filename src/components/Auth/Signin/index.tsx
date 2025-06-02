@@ -14,6 +14,7 @@ const Signin = () => {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("handleSubmit dipanggil!");
     e.preventDefault();
     setError('');
     setLoading(true);
