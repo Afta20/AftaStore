@@ -24,7 +24,7 @@ const ManageUsersPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/admin/users'); // Panggil API route kita
+        const response = await fetch('/api/admin/users',{credentials: 'include'}); // Panggil API route kita
         if (!response.ok) {
           throw new Error(`Failed to fetch users: ${response.statusText}`);
         }
