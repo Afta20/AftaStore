@@ -12,30 +12,6 @@ const ShippingMethod = () => {
       <div className="p-4 sm:p-8.5">
         <div className="flex flex-col gap-4">
           <label
-            htmlFor="free"
-            className="flex cursor-pointer select-none items-center gap-3.5"
-          >
-            <div className="relative">
-              <input
-                type="checkbox"
-                name="free"
-                id="free"
-                className="sr-only"
-                onChange={() => setShippingMethod("free")}
-              />
-              {/* selectShipping === 'free' ? 'border-4 border-blue' : 'border border-gray-4' */}
-              <div
-                className={`flex h-4 w-4 items-center justify-center rounded-full ${
-                  shippingMethod === "free"
-                    ? "border-4 border-blue"
-                    : "border border-gray-4"
-                }`}
-              ></div>
-            </div>
-            Free Shipping
-          </label>
-
-          <label
             htmlFor="fedex"
             className="flex cursor-pointer select-none items-center gap-3.5"
           >
@@ -68,7 +44,7 @@ const ShippingMethod = () => {
                 </div>
 
                 <div className="border-l border-gray-4 pl-4">
-                  <p className="font-semibold text-dark">Rp 40.000</p>
+                  <p className="font-semibold text-dark">Rp 45.000</p>
                   <p className="text-custom-xs">Standard Shipping</p>
                 </div>
               </div>
@@ -108,7 +84,7 @@ const ShippingMethod = () => {
                 </div>
 
                 <div className="border-l border-gray-4 pl-4">
-                  <p className="font-semibold text-dark">Rp. 32.500</p>
+                  <p className="font-semibold text-dark">Rp. 45.500</p>
                   <p className="text-custom-xs">Standard Shipping</p>
                 </div>
               </div>

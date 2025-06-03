@@ -28,14 +28,7 @@ const AddNewProductPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // Nanti kita bisa buat API route untuk mengambil kategori
-        // Untuk sekarang, kita bisa hardcode atau skip dulu
-        // const response = await fetch('/api/categories'); // Contoh API
-        // if (!response.ok) throw new Error('Failed to fetch categories');
-        // const data = await response.json();
-        // setCategories(data);
 
-        // Contoh kategori hardcoded untuk tes
         setCategories([
           { id: 'clxne5028000012mca18d31r7', name: 'Elektronik' }, // Ganti dengan ID kategori asli dari DB-mu
           { id: 'clxne5t4k000212mc999q3s6o', name: 'Aksesoris Komputer' }, // Ganti dengan ID kategori asli dari DB-mu
@@ -70,7 +63,7 @@ const AddNewProductPage = () => {
     };
 
     try {
-      const response = await fetch('/api/admin/products', { // Kita akan buat API POST di sini
+      const response = await fetch('/api/admin/products', { //  API POST di sini
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,13 +77,12 @@ const AddNewProductPage = () => {
       }
 
       setSuccessMessage('Product added successfully!');
-      // Kosongkan form atau redirect
       setTitle('');
       setPrice('');
       setImagePreviews('');
       setDescription('');
       setCategoryId('');
-      // setTimeout(() => router.push('/admin/dashboard/products'), 2000); // Redirect setelah 2 detik
+      setTimeout(() => router.push('/admin/dashboard/products'), 2000); // Redirect setelah 2 detik
     } catch (err: any) {
       setError(err.message || 'An error occurred while adding the product.');
       console.error("Add product error:", err);
