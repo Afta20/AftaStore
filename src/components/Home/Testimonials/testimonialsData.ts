@@ -8,7 +8,7 @@ const testimonialsData: Testimonial[] = [
     authorRole: "Head Of Design Atma Luhur",
   },
   {
-    review: `Great value for money. I purchased a laptop here and it exceeded my expectations in both performance and battery life.`,
+    review: `I purchased a laptop here and it exceeded my expectations in both performance and battery life.`,
     authorName: "Yohanes",
     authorImg: "/images/users/user-02.jpg",
     authorRole: "Himatika Web Developer",
