@@ -42,7 +42,7 @@ const HeroCarousal = () => {
             </h1>
 
             <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi at ipsum at risus euismod lobortis in
+            deliver a fully wireless experience with active noise cancellation for clear, immersive sound anywhere you go.
             </p>
 
             <a
@@ -83,8 +83,7 @@ const HeroCarousal = () => {
             </h1>
 
             <p>
-              Lorem ipsum dolor sit, consectetur elit nunc suscipit non ipsum
-              nec suscipit.
+              deliver a fully wireless experience with active noise cancellation for clear, immersive sound anywhere you go.
             </p>
 
             <a
