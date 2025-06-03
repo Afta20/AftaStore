@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import {
@@ -15,6 +16,8 @@ import EmptyCart from "./EmptyCart";
 const CartSidebarModal = () => {
   const { isCartModalOpen, closeCartModal } = useCartModalContext();
   const cartItems = useAppSelector((state) => state.cartReducer.items);
+  const router = useRouter();
+
 
   const totalPrice = useSelector(selectTotalPrice);
 
@@ -99,20 +102,29 @@ const CartSidebarModal = () => {
             </div>
 
             <div className="flex items-center gap-4">
-              <Link
-                onClick={() => closeCartModal()}
-                href="/cart"
+             <button
+                onClick={() => {
+                  closeCartModal();
+                  setTimeout(() => {
+                    router.push("/cart");
+                  }, 300); 
+                }}
                 className="w-full flex justify-center font-medium text-white bg-blue py-[13px] px-6 rounded-md ease-out duration-200 hover:bg-blue-dark"
               >
                 View Cart
-              </Link>
+              </button>
 
-              <Link
-                href="/checkout"
+              <button
+                onClick={() => {
+                  closeCartModal();
+                  setTimeout(() => {
+                    router.push("/checkout");
+                  }, 300);
+                }}
                 className="w-full flex justify-center font-medium text-white bg-dark py-[13px] px-6 rounded-md ease-out duration-200 hover:bg-opacity-95"
               >
                 Checkout
-              </Link>
+              </button>
             </div>
           </div>
         </div>
