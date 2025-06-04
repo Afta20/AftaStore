@@ -54,6 +54,7 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  orders   Order[]
 }
 
 model VerificationToken {
@@ -75,17 +76,10 @@ model Product {
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-
-  // Relasi ke Kategori
-  // Setiap produk akan memiliki satu kategori (opsional, jika categoryId bisa null)
-  // Jika kamu ingin produk WAJIB punya kategori, hilangkan tanda '?' pada categoryId dan Category
   categoryId      String?   // Field untuk menyimpan ID kategori
   category        Category? @relation(fields: [categoryId], references: [id])
 
-  // Jika ada relasi ke User (Penjual)
-  // sellerId   String?
-  // seller     User?     @relation(fields: [sellerId], references: [id])
-
+  orderItems OrderItem[]
   @@index([categoryId]) // Tambahkan index untuk performa query berdasarkan kategori
   // @@index([sellerId])
 }
@@ -98,4 +92,34 @@ model Category {
   // description String?
 
   products  Product[] // Setiap kategori bisa memiliki banyak produk
+}
+model Order {
+  id        String      @id @default(cuid())
+  userId    String // Relasi ke User
+  user      User        @relation(fields: [userId], references: [id])
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  totalAmount Decimal   // Total harga pesanan termasuk ongkir, dll.
+  status    String      @default("PENDING") // Contoh status: PENDING, PAID, SHIPPED, DELIVERED, CANCELLED
+  
+  shippingAddress String?   // Untuk kesederhanaan, simpan sebagai string. Bisa juga JSON atau model terpisah.
+  customerNotes   String?   // Catatan dari pelanggan saat checkout
+
+  items     OrderItem[] // Relasi ke OrderItem
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String  // Relasi ke Order
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade) // onDelete Cascade penting
+  productId String  // Relasi ke Product
+  product   Product @relation(fields: [productId], references: [id])
+  
+  quantity  Int
+  priceAtPurchase Decimal // Harga produk saat dibeli (penting jika harga produk bisa berubah)
+
+  @@index([orderId])
+  @@index([productId])
 }
