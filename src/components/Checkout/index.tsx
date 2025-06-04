@@ -23,7 +23,45 @@ interface CartItem {
   price: number;
   quantity: number;
 }
+// Di dalam atau di atas komponen Checkout.tsx
+interface BillingDetails {
+  firstName: string;
+  lastName: string;
+  companyName?: string;
+  countryRegion: string;
+  streetAddress: string;
+  apartmentSuite?: string;
+  townCity: string;
+  // stateCounty?: string; // Jika Anda menggunakan ini
+  postcodeZip: string;
+  phone: string;
+  emailAddress: string;
+}
 
+interface ShippingDetails {
+  // Sesuaikan dengan field di komponen Shipping Anda
+  // Contoh jika berbeda dari billing:
+  shippingFirstName?: string;
+  shippingLastName?: string;
+  shippingCountryRegion?: string;
+  shippingStreetAddress?: string;
+  shippingApartmentSuite?: string;
+  shippingTownCity?: string;
+  shippingPostcodeZip?: string;
+  shippingPhone?: string;
+}
+
+interface ShippingOption {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+}
+
+interface PaymentOption {
+  id: string;
+  name: string;
+}
 const Checkout = () => {
   const router = useRouter();
   const dispatch = useDispatch();
