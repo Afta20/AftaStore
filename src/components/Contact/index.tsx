@@ -80,7 +80,7 @@ const Contact = () => {
                         fill="#3C50E0"
                       />
                     </svg>
-                    Address: Lorem ipsum dolor sit amet, consectetur adipiscing
+                    Address: Babarsari,Seturan, Yogyakarta
                   </p>
                 </div>
               </div>
