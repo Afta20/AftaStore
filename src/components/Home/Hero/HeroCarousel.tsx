@@ -87,7 +87,7 @@ const HeroCarousal = () => {
             </p>
 
             <a
-              href="/categories"
+              href="/shop-with-sidebar"
               className="inline-flex font-medium text-white text-custom-sm rounded-md bg-dark py-3 px-9 ease-out duration-200 hover:bg-blue mt-10"
             >
               Shop Now
