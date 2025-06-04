@@ -86,7 +86,7 @@ const Checkout = () => {
       setCheckoutError("Mohon isi alamat pengiriman Anda di kolom 'Alamat Pengiriman Utama'.");
       return;
     }
-
+console.log("Isi cartItems sebelum dikirim ke API:", JSON.stringify(cartItems, null, 2));
     setIsProcessing(true);
     setCheckoutError(null);
 
@@ -116,7 +116,7 @@ const Checkout = () => {
         // Anda bisa menambahkan field lain dengan nilai dummy jika skema Order memerlukannya
       }
     };
-    console.log("Data yang akan dikirim ke API /api/orders:", JSON.stringify(orderData, null, 2)); 
+
     try {
       const response = await fetch('/api/orders', {
         method: 'POST',
