@@ -72,7 +72,7 @@ const Checkout = () => {
     const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappURL, '_blank');
   };
-
+  
   const handleProcessToPayment = async () => {
     if (!session?.user) {
       setCheckoutError("Anda harus login untuk membuat pesanan.");
@@ -116,7 +116,7 @@ const Checkout = () => {
         // Anda bisa menambahkan field lain dengan nilai dummy jika skema Order memerlukannya
       }
     };
-
+    console.log("Data yang akan dikirim ke API /api/orders:", JSON.stringify(orderData, null, 2)); 
     try {
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -279,7 +279,7 @@ const Checkout = () => {
                       onMouseOver={(e) => { if(!isProcessing) (e.target as HTMLButtonElement).style.backgroundColor = '#2563EB';}}
                       onMouseOut={(e) => { if(!isProcessing) (e.target as HTMLButtonElement).style.backgroundColor = '#3B82F6';}}
                     >
-                      {isProcessing ? 'Memproses...' : 'Buat Pesanan & Lihat Nota'}
+                      {isProcessing ? 'Processing...' : 'Process to Payment'}
                     </button>
                     <button
                       type="button"
