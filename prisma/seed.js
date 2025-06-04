@@ -1,10 +1,6 @@
 // File: prisma/seed.js
 
 import { PrismaClient } from '@prisma/client';
-// GANTI PATH INI dengan path yang benar ke file shopData-mu
-// Contoh: import { shopData } = require('../src/data/shopData');
-// atau jika itu file .ts dan diekspor sebagai default:
-// import shopData = require('../src/data/shopData').default;
 import shopData from '../src/components/Shop/shopData.js'; // <--- SESUAIKAN INI
 
 const prisma = new PrismaClient();
@@ -12,8 +8,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log(`Start seeding ...`);
 
-  // 1. Buat beberapa kategori contoh (atau ambil dari sumber lain jika ada)
-  // Kamu bisa sesuaikan nama kategori ini
+
   const category1 = await prisma.category.upsert({
     where: { name: 'Elektronik' },
     update: {},
@@ -58,14 +53,7 @@ async function main() {
     };
   });
 
-  // 3. Masukkan produk ke database
-  // Menggunakan createMany untuk efisiensi jika databasemu mendukungnya dengan baik untuk relasi
-  // Jika createMany bermasalah dengan relasi atau default values di beberapa versi/DB,
-  // kamu bisa menggunakan loop dan prisma.product.create()
-  // await prisma.product.createMany({
-  //   data: productsToCreate,
-  //   skipDuplicates: true, // Lewati jika ada duplikat (berdasarkan field @unique)
-  // });
+
 
   // Alternatif: Loop untuk create satu per satu (lebih aman untuk relasi & default)
   for (const productData of productsToCreate) {

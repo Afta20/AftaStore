@@ -4,7 +4,7 @@ const shopData = [
     reviews: 15,
     price: 590000.0,
     discountedPrice: 290000.0,
-    id: "cmbf17mqd0003egiwxj6vtdf4",
+    id: 1,
     imgs: {
       thumbnails: [
         "/images/products/product-1-sm-1.png",
@@ -21,7 +21,7 @@ const shopData = [
     reviews: 5,
     price: 8990000.0,
     discountedPrice: 6900000.0,
-    id: "cmbf17msi0005egiwfhjmpe8y",
+    id: 2,
     imgs: {
       thumbnails: [
         "/images/products/product-2-sm-1.png",
@@ -38,7 +38,7 @@ const shopData = [
     reviews: 5,
     price: 5900000.0,
     discountedPrice: 2900000.0,
-    id: "cmbf17mtd0007egiwy5vhkdty",
+    id: 3,
     imgs: {
       thumbnails: [
         "/images/products/product-3-sm-1.png",
@@ -55,7 +55,7 @@ const shopData = [
     reviews: 6,
     price: 5900000.0,
     discountedPrice: 2900000.0,
-    id: "cmbf17mu80009egiwpyqty0uj",
+    id: 4,
     imgs: {
       thumbnails: [
         "/images/products/product-4-sm-1.png",
@@ -72,7 +72,7 @@ const shopData = [
     reviews: 3,
     price: 9900000.0,
     discountedPrice: 2900000.0,
-    id: "cmbf17mv5000begiw9diy4vql",
+    id: 5,
     imgs: {
       thumbnails: [
         "/images/products/product-5-sm-1.png",
@@ -89,7 +89,7 @@ const shopData = [
     reviews: 15,
     price: 590000.0,
     discountedPrice: 290000.0,
-    id: "cmbf17mw2000degiwm2odzqdi",
+    id: 6,
     imgs: {
       thumbnails: [
         "/images/products/product-6-sm-1.png",
@@ -106,7 +106,7 @@ const shopData = [
     reviews: 15,
     price: 5900000.0,
     discountedPrice: 2900000.0,
-    id: "cmbf17mwy000fegiw8yp40qqu",
+    id: 7,
     imgs: {
       thumbnails: [
         "/images/products/product-7-sm-1.png",
@@ -123,7 +123,7 @@ const shopData = [
     reviews: 15,
     price: 590000.0,
     discountedPrice: 290000.0,
-    id: "cmbf17mxu000hegiwa5653eph",
+    id: 8,
     imgs: {
       thumbnails: [
         "/images/products/product-8-sm-1.png",
