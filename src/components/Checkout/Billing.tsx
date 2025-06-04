@@ -1,4 +1,18 @@
 import React from "react";
+// Di dalam atau di atas komponen Checkout.tsx
+interface BillingDetails {
+  firstName: string;
+  lastName: string;
+  companyName?: string;
+  countryRegion: string;
+  streetAddress: string;
+  apartmentSuite?: string;
+  townCity: string;
+  // stateCounty?: string; // Jika Anda menggunakan ini
+  postcodeZip: string;
+  phone: string;
+  emailAddress: string;
+}
 
 const Billing = () => {
   return (
