@@ -4,6 +4,19 @@ import Image from "next/image";
 import Link from "next/link";
 import shopData from "@/components/Shop/shopData";
 
+
+export interface ShopDisplayProduct {
+  id: string;
+  title: string;
+  imagePreviews: string[]; // Sesuai dengan yang sudah kamu perbaiki
+  reviews: number;         // Atau number | null jika bisa null
+  price: number;           // Biarkan sebagai number, karena shopData menggunakan number
+  discountedPrice?: number; // Opsional jika bisa tidak ada
+  createdAt?: Date;         
+  updatedAt?: Date;         
+  categoryId?: string | null; 
+}
+
 const BestSeller = () => {
   return (
     <section className="overflow-hidden">

@@ -4,105 +4,136 @@ const shopData = [
     reviews: 15,
     price: 590000.0,
     discountedPrice: 290000.0,
-    createdAt: new Date(), 
-    updatedAt: new Date(), 
-    categoryId: null,
     id: "cmbf17mqd0003egiwxj6vtdf4",
-    imagePreviews: [
-      "/images/products/product-1-sm-1.png",
-      "/images/products/product-1-sm-2.png",
-    ],
+    imgs: {
+      thumbnails: [
+        "/images/products/product-1-sm-1.png",
+        "/images/products/product-1-sm-2.png",
+      ],
+      previews: [
+        "/images/products/product-1-bg-1.png",
+        "/images/products/product-1-bg-2.png",
+      ],
     },
+  },
   {
     title: "iPhone 14 Plus , 6/128GB",
     reviews: 5,
     price: 8990000.0,
     discountedPrice: 6900000.0,
-    createdAt: new Date(), 
-    updatedAt: new Date(), 
     id: "cmbf17msi0005egiwfhjmpe8y",
-    imagePreviews: [
+    imgs: {
+      thumbnails: [
         "/images/products/product-2-sm-1.png",
         "/images/products/product-2-sm-2.png",
       ],
-      },
+      previews: [
+        "/images/products/product-2-bg-1.png",
+        "/images/products/product-2-bg-2.png",
+      ],
+    },
+  },
   {
     title: "Apple iMac M1 24-inch 2021",
     reviews: 5,
     price: 5900000.0,
     discountedPrice: 2900000.0,
-    createdAt: new Date(), 
-    updatedAt: new Date(),
     id: "cmbf17mtd0007egiwy5vhkdty",
-    imagePreviews: [
+    imgs: {
+      thumbnails: [
+        "/images/products/product-3-sm-1.png",
+        "/images/products/product-3-sm-2.png",
+      ],
+      previews: [
         "/images/products/product-3-bg-1.png",
         "/images/products/product-3-bg-2.png",
       ],
+    },
   },
   {
     title: "MacBook Air M1 chip, 8/256GB",
     reviews: 6,
     price: 5900000.0,
     discountedPrice: 2900000.0,
-    createdAt: new Date(), 
-    updatedAt: new Date(),
     id: "cmbf17mu80009egiwpyqty0uj",
-    imagePreviews: [
+    imgs: {
+      thumbnails: [
+        "/images/products/product-4-sm-1.png",
+        "/images/products/product-4-sm-2.png",
+      ],
+      previews: [
         "/images/products/product-4-bg-1.png",
         "/images/products/product-4-bg-2.png",
       ],
+    },
   },
   {
     title: "Apple Watch Ultra",
     reviews: 3,
     price: 9900000.0,
     discountedPrice: 2900000.0,
-    createdAt: new Date(), 
-    updatedAt: new Date(),
     id: "cmbf17mv5000begiw9diy4vql",
-    imagePreviews: [
+    imgs: {
+      thumbnails: [
+        "/images/products/product-5-sm-1.png",
+        "/images/products/product-5-sm-2.png",
+      ],
+      previews: [
         "/images/products/product-5-bg-1.png",
         "/images/products/product-5-bg-2.png",
       ],
+    },
   },
   {
     title: "Logitech MX Master 3 Mouse",
     reviews: 15,
     price: 590000.0,
     discountedPrice: 290000.0,
-    createdAt: new Date(), 
-    updatedAt: new Date(),
     id: "cmbf17mw2000degiwm2odzqdi",
-    imagePreviews : [
+    imgs: {
+      thumbnails: [
+        "/images/products/product-6-sm-1.png",
+        "/images/products/product-6-sm-2.png",
+      ],
+      previews: [
         "/images/products/product-6-bg-1.png",
         "/images/products/product-6-bg-2.png",
       ],
     },
+  },
   {
     title: "Apple iPad Air 5th Gen - 64GB",
     reviews: 15,
     price: 5900000.0,
     discountedPrice: 2900000.0,
-    createdAt: new Date(), 
-    updatedAt: new Date(),
     id: "cmbf17mwy000fegiw8yp40qqu",
-    imagePreviews :[
+    imgs: {
+      thumbnails: [
+        "/images/products/product-7-sm-1.png",
+        "/images/products/product-7-sm-2.png",
+      ],
+      previews: [
         "/images/products/product-7-bg-1.png",
         "/images/products/product-7-bg-2.png",
       ],
     },
+  },
   {
     title: "Asus RT Dual Band Router",
     reviews: 15,
     price: 590000.0,
     discountedPrice: 290000.0,
-    createdAt: new Date(), 
-    updatedAt: new Date(),
     id: "cmbf17mxu000hegiwa5653eph",
-    imagePreviews :[
+    imgs: {
+      thumbnails: [
+        "/images/products/product-8-sm-1.png",
+        "/images/products/product-8-sm-2.png",
+      ],
+      previews: [
         "/images/products/product-8-bg-1.png",
         "/images/products/product-8-bg-2.png",
       ],
     },
+  },
 ];
 export default shopData;
