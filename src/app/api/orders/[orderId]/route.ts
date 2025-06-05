@@ -32,7 +32,7 @@ interface ApiOrderResponse {
 
 export async function GET(
   request: NextRequest,
-  context: { params: { orderId: string } } 
+  context: { params?: { [key: string]: string | string[] | undefined } }
 ) {
   const { orderId } = context.params; 
 
@@ -86,17 +86,17 @@ export async function GET(
 
     const responseData: ApiOrderResponse = {
       id: orderFromDb.id,
-      createdAt: orderFromDb.createdAt.toISOString(), // Konversi DateTime ke string ISO
-      totalAmount: Number(orderFromDb.totalAmount),  // Konversi Decimal ke number
-      shippingAddress: orderFromDb.shippingAddress || 'Alamat tidak tersedia', // Handle jika null
+      createdAt: orderFromDb.createdAt.toISOString(), 
+      totalAmount: Number(orderFromDb.totalAmount),  
+      shippingAddress: orderFromDb.shippingAddress || 'Alamat tidak tersedia', 
       customerNotes: orderFromDb.customerNotes,
       status: orderFromDb.status,
       items: orderFromDb.items.map(item => ({
         id: item.id,
         productId: item.productId,
-        title: item.product.title, // Ambil judul dari produk terkait
+        title: item.product.title, 
         quantity: item.quantity,
-        priceAtPurchase: Number(item.priceAtPurchase), // Konversi Decimal ke number
+        priceAtPurchase: Number(item.priceAtPurchase), 
       })),
       user: orderFromDb.user ? { name: orderFromDb.user.name } : undefined,
     };
