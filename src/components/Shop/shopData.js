@@ -4,6 +4,9 @@ const shopData = [
     reviews: 15,
     price: 590000.0,
     discountedPrice: 290000.0,
+    createdAt: new Date(), 
+    updatedAt: new Date(), 
+    categoryId: null,
     id: "cmbf17mqd0003egiwxj6vtdf4",
     imagePreviews: [
       "/images/products/product-1-sm-1.png",
@@ -15,6 +18,8 @@ const shopData = [
     reviews: 5,
     price: 8990000.0,
     discountedPrice: 6900000.0,
+    createdAt: new Date(), 
+    updatedAt: new Date(), 
     id: "cmbf17msi0005egiwfhjmpe8y",
     imagePreviews: [
         "/images/products/product-2-sm-1.png",
@@ -26,6 +31,8 @@ const shopData = [
     reviews: 5,
     price: 5900000.0,
     discountedPrice: 2900000.0,
+    createdAt: new Date(), 
+    updatedAt: new Date(),
     id: "cmbf17mtd0007egiwy5vhkdty",
     imagePreviews: [
         "/images/products/product-3-bg-1.png",
@@ -37,6 +44,8 @@ const shopData = [
     reviews: 6,
     price: 5900000.0,
     discountedPrice: 2900000.0,
+    createdAt: new Date(), 
+    updatedAt: new Date(),
     id: "cmbf17mu80009egiwpyqty0uj",
     imagePreviews: [
         "/images/products/product-4-bg-1.png",
@@ -48,6 +57,8 @@ const shopData = [
     reviews: 3,
     price: 9900000.0,
     discountedPrice: 2900000.0,
+    createdAt: new Date(), 
+    updatedAt: new Date(),
     id: "cmbf17mv5000begiw9diy4vql",
     imagePreviews: [
         "/images/products/product-5-bg-1.png",
@@ -59,6 +70,8 @@ const shopData = [
     reviews: 15,
     price: 590000.0,
     discountedPrice: 290000.0,
+    createdAt: new Date(), 
+    updatedAt: new Date(),
     id: "cmbf17mw2000degiwm2odzqdi",
     imagePreviews : [
         "/images/products/product-6-bg-1.png",
@@ -70,6 +83,8 @@ const shopData = [
     reviews: 15,
     price: 5900000.0,
     discountedPrice: 2900000.0,
+    createdAt: new Date(), 
+    updatedAt: new Date(),
     id: "cmbf17mwy000fegiw8yp40qqu",
     imagePreviews :[
         "/images/products/product-7-bg-1.png",
@@ -81,6 +96,8 @@ const shopData = [
     reviews: 15,
     price: 590000.0,
     discountedPrice: 290000.0,
+    createdAt: new Date(), 
+    updatedAt: new Date(),
     id: "cmbf17mxu000hegiwa5653eph",
     imagePreviews :[
         "/images/products/product-8-bg-1.png",
