@@ -154,7 +154,7 @@ const OrderConfirmationPage = () => {
             {order.customerNotes && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-gray-700 mb-2">Catatan Pelanggan</h2>
-                <p className="text-sm text-gray-600 italic">"{order.customerNotes}"</p>
+                <p className="text-sm text-gray-600 italic">&ldquo;{order.customerNotes}&ldquo;</p>
               </div>
             )}
 
