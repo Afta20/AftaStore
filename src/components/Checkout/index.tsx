@@ -174,8 +174,8 @@ console.log("Isi cartItems sebelum dikirim ke API:", JSON.stringify(cartItems, n
               {/* */}
               <div className="w-full lg:w-2/3 space-y-8">
                 <div className="bg-white shadow-md rounded-lg p-6 sm:p-8">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-6">Informasi Kontak</h3>
-                  <p className="text-sm text-gray-600">Login sebagai: 
+                  <h3 className="text-xl font-semibold text-gray-800 mb-6">Contact</h3>
+                  <p className="text-sm text-gray-600">Login as: 
                     <strong className="text-gray-900"> {session.user?.name}</strong> ({session.user?.email})
                   </p>
                 </div>
@@ -185,15 +185,15 @@ console.log("Isi cartItems sebelum dikirim ke API:", JSON.stringify(cartItems, n
                 
                 {/* Textarea untuk alamat pengiriman yang akan DIKIRIM ke backend */}
                 <div className="bg-white shadow-md rounded-lg p-6 sm:p-8">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Alamat Pengiriman Utama</h3>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Main Address</h3>
                   <label htmlFor="shippingAddress" className="block mb-2 text-sm font-medium text-gray-700">
-                    Alamat Lengkap Pengiriman (Jalan, No, RT/RW, Kel/Desa, Kec, Kab/Kota, Provinsi, Kodepos) <span className="text-red-600">*</span>
+                    Complete Delivery Address (Street, No., RT/RW, Village/Kelurahan, District, City/Regency, Province, Postal Code) <span className="text-red-600">*</span>
                   </label>
                   <textarea
                     name="shippingAddress"
                     id="shippingAddress"
                     rows={4}
-                    placeholder="Masukkan alamat lengkap pengiriman Anda di sini..."
+                    placeholder="Type your complete shipping address here..."
                     className="block w-full rounded-md border-gray-300 shadow-sm placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3 bg-gray-50"
                     value={shippingAddressMainInput}
                     onChange={(e) => setShippingAddressMainInput(e.target.value)}
@@ -204,11 +204,11 @@ console.log("Isi cartItems sebelum dikirim ke API:", JSON.stringify(cartItems, n
                 <div className="bg-white shadow-md rounded-lg p-6 sm:p-8">
                   <div>
                     <label htmlFor="notes" className="block mb-2 text-sm font-medium text-gray-700">
-                      Catatan Tambahan (opsional)
+                      Additional Notes (opsional)
                     </label>
                     <textarea
                       name="notes" id="notes" rows={5}
-                      placeholder="Catatan untuk pesanan Anda, misal: permintaan khusus untuk pengiriman."
+                      placeholder="Notes for your order, Ex: special notes for delivery."
                       className="block w-full rounded-md border-gray-300 shadow-sm placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3 bg-gray-50"
                       value={customerNotesMainInput}
                       onChange={(e) => setCustomerNotesMainInput(e.target.value)}
@@ -222,11 +222,11 @@ console.log("Isi cartItems sebelum dikirim ke API:", JSON.stringify(cartItems, n
                 {/* Order Summary (Ringkasan Pesanan) */}
                 <div className="bg-white shadow-lg rounded-[10px]">
                   <div className="border-b border-gray-200 py-5 px-6 sm:px-8">
-                    <h3 className="font-medium text-xl text-gray-800">Pesanan Anda</h3>
+                    <h3 className="font-medium text-xl text-gray-800">Your Order</h3>
                   </div>
                   <div className="pt-4 pb-6 px-6 sm:px-8 space-y-3">
                     <div className="flex items-center justify-between text-sm font-medium text-gray-500 border-b border-gray-200 pb-3">
-                      <span>Produk</span>
+                      <span>Product</span>
                       <span className="text-right">Subtotal</span>
                     </div>
                     {cartItems && cartItems.length > 0 ? (
@@ -243,10 +243,10 @@ console.log("Isi cartItems sebelum dikirim ke API:", JSON.stringify(cartItems, n
                         </div>
                       ))
                     ) : (
-                      <p className="py-5 text-center text-gray-500">Keranjang Anda kosong.</p>
+                      <p className="py-5 text-center text-gray-500">Your cart is empty</p>
                     )}
                     <div className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
-                      <p className="text-sm text-gray-800">Ongkos Kirim</p>
+                      <p className="text-sm text-gray-800">Shipping</p>
                       <p className="text-sm text-gray-800 text-right">Rp. {hardcodedShippingFee.toLocaleString('id-ID')}</p>
                     </div>
                     <div className="flex items-center justify-between pt-4">
