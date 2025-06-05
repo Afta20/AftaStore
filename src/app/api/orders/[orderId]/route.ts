@@ -32,9 +32,9 @@ interface ApiOrderResponse {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  context: { params: { orderId: string } } 
 ) {
-  const { orderId } = params;
+  const { orderId } = context.params; 
 
   if (!orderId) {
     return NextResponse.json({ message: 'Order ID tidak disediakan' }, { status: 400 });
@@ -51,6 +51,7 @@ export async function GET(
     const orderFromDb = await prisma.order.findUnique({
       where: {
         id: orderId,
+        userId: token.sub,
       },
       include: {
         items: { // Ambil item-item dalam pesanan
@@ -79,15 +80,10 @@ export async function GET(
       return NextResponse.json({ message: 'Pesanan tidak ditemukan' }, { status: 404 });
     }
 
-    // Otorisasi: Pastikan user yang login adalah pemilik pesanan atau admin
-    // (Asumsi token.sub adalah userId dan ada peran admin di token jika diperlukan)
-    // if (orderFromDb.userId !== token.sub /* && token.role !== 'admin' */) {
-    //   return NextResponse.json({ message: 'Tidak Diizinkan (Forbidden)' }, { status: 403 });
-    // }
+    if (orderFromDb.userId !== token.sub) {
+        return NextResponse.json({ message: 'Tidak Diizinkan (Forbidden)' }, { status: 403 });
+    }
 
-
-    // Transformasi data agar sesuai dengan yang diharapkan frontend (FetchedOrder & FetchedOrderItem)
-    // Terutama konversi Decimal ke number dan DateTime ke string ISO
     const responseData: ApiOrderResponse = {
       id: orderFromDb.id,
       createdAt: orderFromDb.createdAt.toISOString(), // Konversi DateTime ke string ISO
