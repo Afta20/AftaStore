@@ -12,8 +12,7 @@ import { removeAllItemsFromCart } from '@/redux/features/cart-slice'; // PASTIKA
 import { RootState, useAppSelector } from '@/redux/store'; // PASTIKAN PATH INI BENAR
 
 // Komponen-komponen ini akan dirender untuk tampilan,
-// tapi data input spesifik dari mereka belum kita ambil di handleProcessToPayment untuk versi ini
-import Billing from "@/components/Checkout/Billing";     // Sesuaikan path jika perlu
+// tapi data input spesifik dari mereka belum kita ambil di handleProcessToPayment untuk versi ini    // Sesuaikan path jika perlu
 import Shipping from "@/components/Checkout/Shipping";   // Sesuaikan path jika perlu
 import ShippingMethod from "@/components/Checkout/ShippingMethod"; // Sesuaikan path jika perlu
 import PaymentMethod from "@/components/Checkout/PaymentMethod"; // Sesuaikan path jika perlu
@@ -182,7 +181,6 @@ console.log("Isi cartItems sebelum dikirim ke API:", JSON.stringify(cartItems, n
                 </div>
 
                 {/* Komponen Billing dan Shipping dirender untuk tampilan saja */}
-                <Billing />
                 <Shipping /> 
                 
                 {/* Textarea untuk alamat pengiriman yang akan DIKIRIM ke backend */}
