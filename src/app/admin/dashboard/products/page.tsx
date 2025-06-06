@@ -14,6 +14,7 @@ import {
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
+// <-- UBAH: Sesuaikan interface Product untuk menyertakan objek category
 interface Product {
   id: string;
   title: string;
@@ -23,6 +24,9 @@ interface Product {
   reviews?: number | null;
   discountedPrice?: number | null;
   categoryId?: string | null;
+  category?: { // Objek kategori dengan nama
+    name: string;
+  } | null; // Bisa null jika produk tidak punya kategori
   createdAt: string;
 }
 
@@ -40,8 +44,6 @@ const ManageProductsPage = () => {
   const [loadingChartData, setLoadingChartData] = useState(true);
   const [chartError, setChartError] = useState<string | null>(null);
 
-  // fetchProducts, processCategoryData, useEffects, handleDeleteProduct
-  // ... (kode fungsi-fungsi ini sama seperti respons saya sebelumnya, saya singkat di sini) ...
   const fetchProducts = async () => {
     setLoadingProducts(true);
     setProductError(null);
@@ -60,18 +62,21 @@ const ManageProductsPage = () => {
     }
   };
 
+  // <-- UBAH: Modifikasi processCategoryData untuk menggunakan product.category.name
   const processCategoryData = (productList: Product[]) => {
     if (productList.length === 0) {
       setCategoryDistribution({ labels: [], counts: [] });
       return;
     }
     const counts: { [key: string]: number } = {};
-    const categoryIdToNameMapping: { [key: string]: string } = {};
+
     productList.forEach(product => {
-      const catId = product.categoryId || 'Tanpa Kategori';
-      const catName = categoryIdToNameMapping[catId] || catId;
+      // Gunakan nama kategori dari product.category.name jika ada,
+      // jika tidak, gunakan "Tanpa Kategori"
+      const catName = product.category?.name || 'Tanpa Kategori';
       counts[catName] = (counts[catName] || 0) + 1;
     });
+
     setCategoryDistribution({
       labels: Object.keys(counts),
       counts: Object.values(counts),
@@ -97,11 +102,11 @@ const ManageProductsPage = () => {
       } finally {
         setLoadingChartData(false);
       }
-    } else if (!loadingProducts) {
+    } else if (!loadingProducts && products.length === 0) { // Periksa jika loading produk selesai dan produk kosong
         setCategoryDistribution({ labels: [], counts: [] });
         setLoadingChartData(false);
     }
-  }, [products, loadingProducts]);
+  }, [products, loadingProducts]); // Tambahkan loadingProducts sebagai dependensi
 
   const handleDeleteProduct = async (productId: string) => {
     if (window.confirm("Anda yakin ingin menghapus produk ini?")) {
@@ -122,8 +127,7 @@ const ManageProductsPage = () => {
     }
   };
 
-
-  const categoryPieData = categoryDistribution ? { /* ...konfigurasi data pie chart... */
+  const categoryPieData = categoryDistribution ? {
     labels: categoryDistribution.labels,
     datasets: [
       {
@@ -134,72 +138,87 @@ const ManageProductsPage = () => {
           'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)',
           'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)',
         ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)',
+        borderColor: [ // Disesuaikan agar lebih kontras atau seragam
+            '#FFFFFF', '#FFFFFF', '#FFFFFF',
+            '#FFFFFF', '#FFFFFF', '#FFFFFF',
         ],
-        borderWidth: 1,
+        borderWidth: 2, // Sedikit lebih tebal untuk pemisah
       },
     ],
   } : null;
-  const categoryPieOptions = { /* ...konfigurasi opsi pie chart... */
+
+  const categoryPieOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' as const },
-      title: { display: true, text: 'Distribusi Produk per Kategori', font: { size: 16 } },
+      legend: {
+        position: 'top' as const,
+        labels: {
+            padding: 20, // Beri jarak pada label legenda
+            font: {
+                size: 12,
+            }
+        }
+      },
+      title: {
+        display: true,
+        text: 'Distribusi Produk per Kategori',
+        font: { size: 16, weight: 'bold' as 'bold' }, // Pertegas judul
+        padding: {
+            top: 10,
+            bottom: 20
+        }
+      },
+      tooltip: {
+        callbacks: { // Kustomisasi tooltip
+            label: function(context: any) {
+                let label = context.dataset.label || '';
+                if (label) {
+                    label += ': ';
+                }
+                if (context.parsed !== null) {
+                    label += context.parsed;
+                }
+                return label;
+            }
+        }
+      }
     },
   };
 
-  const cardStyle: React.CSSProperties = { /* ...style kartu... */
+  const cardStyle: React.CSSProperties = {
     padding: '20px', backgroundColor: 'white', borderRadius: '8px',
     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     textAlign: 'center',
   };
-  const cardTitleStyle: React.CSSProperties = { /* ...style judul kartu... */
+  const cardTitleStyle: React.CSSProperties = {
     fontSize: '0.875rem', color: '#6B7280', fontWeight: 500,
     textTransform: 'uppercase', marginBottom: '8px',
   };
-  const cardStatStyle: React.CSSProperties = { /* ...style statistik kartu... */
+  const cardStatStyle: React.CSSProperties = {
     fontSize: '2.25rem', fontWeight: 'bold', color: '#1F2937',
   };
   const totalStock = products.reduce((acc, product) => acc + (product.stock || 0), 0);
-
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
         <h1 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-white">Manage Products</h1>
         <div className="flex gap-3">
-          {/* Tombol Add New Product dengan inline style */}
           <Link
             href="/admin/dashboard/products/new"
             style={{
-              padding: '0.5rem 1rem', // Tailwind: px-4 py-2
-              backgroundColor: '#22c55e', // Tailwind: bg-green-500
-              color: 'white',
-              borderRadius: '0.375rem', // Tailwind: rounded-md
-              textDecoration: 'none',
-              fontSize: '0.875rem', // Tailwind: text-sm
-              fontWeight: 500, // Tailwind: font-medium
-              // Efek hover tidak bisa langsung di inline style untuk background,
-              // tapi bisa ditambahkan via CSS class atau <style jsx>
+              padding: '0.5rem 1rem', backgroundColor: '#22c55e', color: 'white',
+              borderRadius: '0.375rem', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500,
             }}
           >
             Add New Product
           </Link>
-          {/* Tombol Back to Dashboard dengan inline style */}
           <Link
             href="/admin/dashboard"
             style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#3b82f6', // Tailwind: bg-blue-500
-              color: 'white',
-              borderRadius: '0.375rem',
-              textDecoration: 'none',
-              fontSize: '0.875rem',
-              fontWeight: 500,
+              padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white',
+              borderRadius: '0.375rem', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500,
             }}
           >
             Back to Dashboard
@@ -207,11 +226,9 @@ const ManageProductsPage = () => {
         </div>
       </div>
 
-      {/* Bagian Statistik dan Grafik (sama seperti sebelumnya) */}
       <div className="bg-gray-100 dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow-md mb-8">
-        {/* ... (konten kartu statistik dan pie chart tetap sama) ... */}
         <h2 className="text-xl font-semibold text-gray-700 dark:text-white mb-6 text-center">Product Overview</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-8"> {/* Diubah ke 3 kolom */}
           <div style={cardStyle} className="dark:bg-gray-700">
             <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Produk</h3>
             <p style={cardStatStyle} className="dark:text-white">{loadingProducts ? '...' : products.length}</p>
@@ -234,11 +251,10 @@ const ManageProductsPage = () => {
             <Pie data={categoryPieData} options={categoryPieOptions as any} />
           </div>
         )}
-        {categoryDistribution && categoryDistribution.labels.length === 0 && !loadingChartData && (
-            <p className="text-center text-gray-500 dark:text-gray-400">Belum ada data kategori untuk ditampilkan.</p>
+        {categoryDistribution && categoryDistribution.labels.length === 0 && !loadingChartData && !loadingProducts &&(
+            <p className="text-center text-gray-500 dark:text-gray-400">Belum ada data kategori untuk ditampilkan atau tidak ada produk.</p>
         )}
       </div>
-
 
       {loadingProducts && <p className="text-center text-gray-500 dark:text-gray-400">Memuat daftar produk...</p>}
       {productError && <p className="text-center text-red-500 py-4">Error: {productError}</p>}
@@ -248,7 +264,6 @@ const ManageProductsPage = () => {
           <p className="text-center text-gray-500 dark:text-gray-400 py-4">Tidak ada produk ditemukan.</p>
         ) : (
           <div className="overflow-x-auto bg-white dark:bg-gray-800 shadow-md rounded-lg">
-            {/* Menggunakan kelas Tailwind untuk tabel agar lebih konsisten jika sebagian besar stylingmu Tailwind */}
             <table className="w-full min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
@@ -256,6 +271,7 @@ const ManageProductsPage = () => {
                   <th scope="col" className="px-6 py-3">Title</th>
                   <th scope="col" className="px-6 py-3">Price</th>
                   <th scope="col" className="px-6 py-3">Stock</th>
+                  <th scope="col" className="px-6 py-3">Category</th> {/* <-- TAMBAHKAN Header Kolom Kategori */}
                   <th scope="col" className="px-6 py-3">Created At</th>
                   <th scope="col" className="px-6 py-3">Actions</th>
                 </tr>
@@ -276,34 +292,27 @@ const ManageProductsPage = () => {
                           color: (product.stock || 0) <= 5 ? '#ef4444' : (product.stock || 0) <= 10 ? '#f59e0b' : '#10b981',
                         }}
                       >
-                        {product.stock}
+                        {product.stock ?? 'N/A'} {/* Tampilkan N/A jika stok null/undefined */}
                       </span>
                     </td>
+                    {/* <-- TAMBAHKAN Sel untuk menampilkan Nama Kategori --> */}
+                    <td className="px-6 py-4">{product.category?.name || 'Tanpa Kategori'}</td>
                     <td className="px-6 py-4">{new Date(product.createdAt).toLocaleDateString('id-ID')}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {/* Tombol Edit dengan inline style */}
                       <Link
                         href={`/admin/dashboard/products/edit/${product.id}`}
                         style={{
-                          fontWeight: 500, // Tailwind: font-medium
-                          color: '#2563eb', // Tailwind: text-blue-600 (atau dark:text-blue-500)
-                          textDecoration: 'underline', // Tailwind: hover:underline (efek hover default link)
-                          marginRight: '0.75rem', // Tailwind: mr-3
+                          fontWeight: 500, color: '#2563eb', textDecoration: 'underline',
+                          marginRight: '0.75rem',
                         }}
                       >
                         Edit
                       </Link>
-                      {/* Tombol Delete dengan inline style */}
                       <button
                         onClick={() => handleDeleteProduct(product.id)}
                         style={{
-                          fontWeight: 500, // Tailwind: font-medium
-                          color: '#dc2626', // Tailwind: text-red-600 (atau dark:text-red-500)
-                          textDecoration: 'underline', // Tailwind: hover:underline
-                          background: 'none',
-                          border: 'none',
-                          padding: 0,
-                          cursor: 'pointer',
+                          fontWeight: 500, color: '#dc2626', textDecoration: 'underline',
+                          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
                         }}
                       >
                         Delete
