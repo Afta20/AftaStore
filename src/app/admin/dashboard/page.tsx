@@ -7,7 +7,7 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement, // Meskipun tidak dipakai, mungkin ada di registrasi awal
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -30,9 +30,8 @@ interface MonthlySalesData {
   orders: number[];
 }
 
-// Interface untuk data kategori yang akan kita tampilkan di chart
 interface TargetCategoryDistributionData {
-  labels: string[]; // Akan berisi 'Elektronik', 'Aksesoris Komputer'
+  labels: string[];
   counts: number[];
 }
 
@@ -43,38 +42,52 @@ interface DashboardSummary {
   productsSoldThisMonth: number;
 }
 
-// Interface untuk produk yang diterima dari API (termasuk nama kategori)
 interface ProductFromApi {
   id: string;
   categoryId?: string | null;
-  category?: {
+  category?: { // API /api/admin/products sebaiknya mengembalikan ini
     name: string;
   } | null;
   // tambahkan field lain dari produk jika dibutuhkan untuk logika lain
+  // misalnya 'title' untuk debugging
+  title?: string; 
 }
 
-// Interface untuk kategori yang diterima dari API
 interface CategoryFromApi {
   id: string;
   name: string;
 }
 
+// Data Kategori Dummy (sesuaikan ID jika Anda tahu ID pasti dari DB Anda)
+const DUMMY_CATEGORIES: CategoryFromApi[] = [
+  { id: 'clxne5028000012mca18d31r7', name: 'Elektronik' }, // Contoh ID
+  { id: 'clxne5t4k000212mc999q3s6o', name: 'Aksesoris Komputer' }, // Contoh ID
+];
+
+// Data Produk Dummy (yang merujuk ke ID kategori dummy di atas)
+const DUMMY_PRODUCTS: ProductFromApi[] = [
+  { id: 'prod1', categoryId: DUMMY_CATEGORIES[0].id, category: { name: DUMMY_CATEGORIES[0].name }, title: "Produk Elektronik 1" },
+  { id: 'prod2', categoryId: DUMMY_CATEGORIES[0].id, category: { name: DUMMY_CATEGORIES[0].name }, title: "Produk Elektronik 2" },
+  { id: 'prod3', categoryId: DUMMY_CATEGORIES[1].id, category: { name: DUMMY_CATEGORIES[1].name }, title: "Aksesoris Komp 1" },
+  { id: 'prod4', categoryId: 'other_cat_id', category: { name: "Kategori Lain" }, title: "Produk Kategori Lain"}, // Produk dengan kategori lain
+  { id: 'prod5', categoryId: DUMMY_CATEGORIES[0].id, category: { name: DUMMY_CATEGORIES[0].name }, title: "Produk Elektronik 3" },
+];
+
+
 const AdminDashboardPage = () => {
   const [summaryData, setSummaryData] = useState<DashboardSummary | null>(null);
   const [monthlySales, setMonthlySales] = useState<MonthlySalesData | null>(null);
-  // State untuk chart distribusi kategori (hanya 2 kategori target)
   const [targetCategoryDistribution, setTargetCategoryDistribution] = useState<TargetCategoryDistributionData | null>(null);
   
-  const [allProducts, setAllProducts] = useState<ProductFromApi[]>([]); // Untuk menyimpan semua produk
-  const [allCategories, setAllCategories] = useState<CategoryFromApi[]>([]); // Untuk menyimpan semua kategori
+  const [allProducts, setAllProducts] = useState<ProductFromApi[]>([]);
+  const [allCategories, setAllCategories] = useState<CategoryFromApi[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fungsi untuk memproses data kategori menjadi hanya 2 kategori target
   const processTargetCategoryDistribution = (
     products: ProductFromApi[],
-    categories: CategoryFromApi[]
+    categories: CategoryFromApi[] // Parameter ini mungkin tidak terlalu dibutuhkan jika produk sudah punya category.name
   ) => {
     const targetCategoryNames = ['Elektronik', 'Aksesoris Komputer'];
     const counts: { [key: string]: number } = {
@@ -82,7 +95,7 @@ const AdminDashboardPage = () => {
       'Aksesoris Komputer': 0,
     };
 
-    // Buat mapping id ke nama untuk efisiensi jika produk hanya punya categoryId
+    // Mapping ID ke Nama hanya sebagai fallback jika product.category.name tidak ada
     const categoryNameMap = new Map<string, string>();
     categories.forEach(cat => categoryNameMap.set(cat.id, cat.name));
 
@@ -90,7 +103,7 @@ const AdminDashboardPage = () => {
       let categoryName: string | undefined | null = null;
       if (product.category?.name) {
         categoryName = product.category.name;
-      } else if (product.categoryId) {
+      } else if (product.categoryId && categoryNameMap.has(product.categoryId)) {
         categoryName = categoryNameMap.get(product.categoryId);
       }
 
@@ -99,12 +112,14 @@ const AdminDashboardPage = () => {
       } else if (categoryName === 'Aksesoris Komputer') {
         counts['Aksesoris Komputer']++;
       }
+      // Produk dengan kategori lain atau tanpa kategori akan diabaikan untuk chart ini
     });
 
     setTargetCategoryDistribution({
       labels: targetCategoryNames,
       counts: [counts['Elektronik'], counts['Aksesoris Komputer']],
     });
+     // console.log("Processed category distribution:", { labels: targetCategoryNames, counts: [counts['Elektronik'], counts['Aksesoris Komputer']] });
   };
 
 
@@ -112,72 +127,100 @@ const AdminDashboardPage = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       setError(null);
+      let fetchedProducts: ProductFromApi[] = [];
+      let fetchedCategories: CategoryFromApi[] = [];
+
       try {
-        // --- MENGAMBIL DATA AKTUAL ---
-        const summaryRes = await fetch('/api/admin/dashboard/summary'); // Ganti dengan API Anda
-        if (summaryRes.ok) {
+        // 1. Fetch Summary Data
+        try {
+            const summaryRes = await fetch('/api/admin/dashboard/summary');
+            if (!summaryRes.ok) {
+                console.warn("Gagal mengambil data summary, menggunakan mock.");
+                throw new Error("API summary gagal"); // Dilempar agar ditangkap dan mock digunakan
+            }
             const summaryJson = await summaryRes.json();
             setSummaryData(summaryJson);
-        } else {
-            console.warn("Gagal mengambil data summary, menggunakan mock.");
+        } catch (summaryError) {
+            console.warn("Error fetching summary, using mock data.", summaryError);
             setSummaryData({ totalUsers: 1256, totalOrders: 789, monthlyRevenue: 75500000, productsSoldThisMonth: 340 });
         }
 
+        // 2. Fetch Products
+        try {
+            const productsRes = await fetch('/api/admin/products');
+            if (!productsRes.ok) {
+                 console.warn("Gagal mengambil data produk, menggunakan mock.");
+                 throw new Error("API produk gagal");
+            }
+            fetchedProducts = await productsRes.json();
+            setAllProducts(fetchedProducts);
+        } catch (productsError) {
+            console.warn("Error fetching products, using mock data.", productsError);
+            fetchedProducts = DUMMY_PRODUCTS; // Gunakan dummy jika fetch gagal
+            setAllProducts(DUMMY_PRODUCTS);
+        }
 
-        // Mock untuk sales, ganti dengan API jika ada
+        // 3. Fetch Categories
+        try {
+            const categoriesRes = await fetch('/api/admin/categories');
+            if (!categoriesRes.ok) {
+                console.warn("Gagal mengambil data kategori, menggunakan mock.");
+                throw new Error("API kategori gagal");
+            }
+            fetchedCategories = await categoriesRes.json();
+            setAllCategories(fetchedCategories);
+        } catch (categoriesError) {
+            console.warn("Error fetching categories, using mock data.", categoriesError);
+            fetchedCategories = DUMMY_CATEGORIES; // Gunakan dummy jika fetch gagal
+            setAllCategories(DUMMY_CATEGORIES);
+        }
+
+        // Data sales masih mock untuk sekarang
         setMonthlySales({
           labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
           revenues: [150, 220, 180, 250, 200, 300].map(v => v * 100000),
           orders: [30, 45, 35, 50, 40, 60],
         });
 
-        // Fetch semua produk (API ini sudah kita modifikasi untuk menyertakan nama kategori)
-        const productsRes = await fetch('/api/admin/products');
-        if (!productsRes.ok) throw new Error('Gagal mengambil data produk.');
-        const productsData: ProductFromApi[] = await productsRes.json();
-        setAllProducts(productsData);
-
-        // Fetch semua kategori (Anda perlu membuat API /api/admin/categories)
-        const categoriesRes = await fetch('/api/admin/categories');
-        if (!categoriesRes.ok) throw new Error('Gagal mengambil data kategori.');
-        const categoriesData: CategoryFromApi[] = await categoriesRes.json();
-        setAllCategories(categoriesData);
-
-        // Data kategori akan diproses di useEffect lain setelah produk dan kategori di-set
-
-      } catch (err: any) {
-        setError(err.message || "Gagal memuat data dashboard.");
-        console.error("Failed to fetch dashboard data:", err);
-        // Fallback ke data mock jika ada error fetch, agar halaman tetap render sesuatu
+      } catch (err: any) { // Catch error global jika ada yang tidak tertangani di atas
+        setError("Terjadi kesalahan umum saat memuat data dashboard.");
+        console.error("Global error in fetchDashboardData:", err);
+        // Pastikan semua state punya nilai default agar tidak crash saat render
         if (!summaryData) setSummaryData({ totalUsers: 0, totalOrders: 0, monthlyRevenue: 0, productsSoldThisMonth: 0 });
         if (!monthlySales) setMonthlySales({ labels: [], revenues: [], orders: [] });
-        if (!targetCategoryDistribution) setTargetCategoryDistribution({ labels: ['Elektronik', 'Aksesoris Komputer'], counts: [0, 0] });
+        if (fetchedProducts.length === 0) setAllProducts(DUMMY_PRODUCTS); // Jika produk masih kosong, set dummy
+        if (fetchedCategories.length === 0) setAllCategories(DUMMY_CATEGORIES); // Jika kategori masih kosong, set dummy
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, []); // Hanya dijalankan sekali saat mount
+  }, []);
 
-  // useEffect terpisah untuk memproses data kategori setelah data produk & kategori tersedia
   useEffect(() => {
-    if (allProducts.length > 0 && allCategories.length > 0) {
+    // Hanya proses jika tidak loading dan ada produk dan kategori
+    if (!loading && (allProducts.length > 0 || allCategories.length > 0)) {
       processTargetCategoryDistribution(allProducts, allCategories);
-    } else if (!loading) { // Jika tidak loading dan data belum ada, set default
-        setTargetCategoryDistribution({ labels: ['Elektronik', 'Aksesoris Komputer'], counts: [0, 0] });
+    } else if (!loading && allProducts.length === 0 && allCategories.length === 0) {
+      // Jika tidak ada produk dan kategori sama sekali (bahkan dari mock), set default
+      setTargetCategoryDistribution({ labels: ['Elektronik', 'Aksesoris Komputer'], counts: [0, 0] });
     }
-  }, [allProducts, allCategories, loading]); // Jalankan ketika products, categories, atau loading berubah
+  }, [allProducts, allCategories, loading]);
 
+  // ... (sisa kode untuk salesChartData, salesChartOptions, categoryPieChartOptions, dan return JSX tetap sama seperti di artifact admin_dashboard_page_real_category_chart) ...
+  // Pastikan Anda menggunakan 'categoryPieChartData' untuk data Pie/Doughnut chart
+  
   if (loading) {
     return <div className="p-6 text-center text-gray-700">Memuat data dashboard...</div>;
   }
 
-  if (error) {
+  // Error global bisa ditampilkan di sini, atau Anda bisa menangani error per fetch
+  if (error && !summaryData) { // Tampilkan error besar hanya jika data utama (summary) gagal total
     return <div className="p-6 text-center text-red-500">Error: {error}</div>;
   }
 
-  const salesChartData = monthlySales ? { /* ... sama seperti sebelumnya ... */
+  const salesChartData = monthlySales ? {
     labels: monthlySales.labels,
     datasets: [
       {
@@ -193,24 +236,22 @@ const AdminDashboardPage = () => {
     ],
   } : null;
 
-  const salesChartOptions = { /* ... sama seperti sebelumnya ... */
+  const salesChartOptions = {
     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index' as const, intersect: false },
     stacked: false, plugins: { title: { display: true, text: 'Grafik Pendapatan & Jumlah Pesanan Bulanan' }, legend: { position: 'top' as const }},
     scales: { y: { type: 'linear' as const, display: true, position: 'left' as const, title: { display: true, text: 'Pendapatan (Rp)'}},
               y1: { type: 'linear' as const, display: true, position: 'right' as const, title: { display: true, text: 'Jumlah Pesanan'}, grid: { drawOnChartArea: false }}}
   };
 
-  // Menggunakan targetCategoryDistribution untuk pie chart
   const categoryPieChartData = targetCategoryDistribution ? {
-    labels: targetCategoryDistribution.labels, // ['Elektronik', 'Aksesoris Komputer']
+    labels: targetCategoryDistribution.labels,
     datasets: [
       {
         label: 'Distribusi Kategori',
-        data: targetCategoryDistribution.counts, // [jumlah_elektronik, jumlah_aksesoris_komputer]
+        data: targetCategoryDistribution.counts,
         backgroundColor: [
-          'rgba(54, 162, 235, 0.8)', // Biru untuk Elektronik
-          'rgba(255, 206, 86, 0.8)', // Kuning untuk Aksesoris Komputer
-          // Tambahkan warna lain jika ada kategori "Lainnya"
+          'rgba(54, 162, 235, 0.8)', 
+          'rgba(255, 206, 86, 0.8)', 
         ],
         borderColor: [
           'rgba(54, 162, 235, 1)',
@@ -221,20 +262,19 @@ const AdminDashboardPage = () => {
     ],
   } : null;
 
-  const categoryPieChartOptions = { /* ... sama seperti sebelumnya, hanya judul mungkin bisa disesuaikan ... */
+  const categoryPieChartOptions = {
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { position: 'top' as const }, title: { display: true, text: 'Distribusi Produk (Elektronik vs Aksesoris Komp.)' }}
   };
 
   return (
-    <div className="space-y-6 md:space-y-8 p-4 md:p-6 lg:p-8"> {/* Tambahkan padding di sini jika layout admin belum ada */}
+    <div className="space-y-6 md:space-y-8 p-4 md:p-6 lg:p-8">
       <h1 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-white">
         Dashboard Admin
       </h1>
 
       {summaryData && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {/* ... Kartu Ringkasan tetap sama ... */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-300">
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Pengguna</h3>
             <p className="mt-1 text-3xl font-semibold text-blue-600 dark:text-blue-400">
@@ -271,13 +311,12 @@ const AdminDashboardPage = () => {
           )}
         </div>
         <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow min-h-[300px] md:min-h-[400px] flex justify-center items-center">
-          {/* Menggunakan categoryPieChartData */}
-          {targetCategoryDistribution && categoryPieChartData ? (
+          {targetCategoryDistribution && categoryPieChartData && targetCategoryDistribution.labels.length > 0 ? (
             <div className="w-full h-full max-w-md">
               <Doughnut options={categoryPieChartOptions as any} data={categoryPieChartData} />
             </div>
           ) : (
-            <p className="text-center text-gray-500 dark:text-gray-400">Data distribusi kategori tidak tersedia atau sedang dimuat.</p>
+            <p className="text-center text-gray-500 dark:text-gray-400">Data distribusi kategori tidak tersedia atau tidak ada produk dalam kategori target.</p>
           )}
         </div>
       </div>
@@ -285,7 +324,6 @@ const AdminDashboardPage = () => {
       <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow">
         <h2 className="text-xl font-semibold text-gray-700 dark:text-white mb-4">Pesanan Terbaru</h2>
         <p className="text-gray-500 dark:text-gray-400">Belum ada data pesanan terbaru.</p>
-        {/* TODO: Implementasi tabel atau daftar pesanan terbaru dari API */}
       </div>
     </div>
   );

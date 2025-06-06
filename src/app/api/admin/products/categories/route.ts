@@ -1,13 +1,13 @@
 // File: src/app/api/admin/categories/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextResponse, NextRequest } from 'next/server';
+import prisma from '@/lib/prisma'; // Sesuaikan path ke Prisma client Anda
 import { getToken } from 'next-auth/jwt';
-import type { NextRequest } from 'next/server';
 
-export async function GET(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+export async function GET(request: NextRequest) {
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
-  // Hanya admin yang boleh mengakses daftar kategori (sesuaikan jika perlu)
+  // Akses ke kategori mungkin tidak perlu seketat admin,
+  // tergantung kebutuhan Anda. Untuk dashboard, biasanya admin.
   if (!token || token.role !== 'admin') {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
