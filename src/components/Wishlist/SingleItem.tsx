@@ -98,7 +98,7 @@ const SingleItem = ({ item }) => {
             />
           </svg>
 
-          <span className="text-red"> Out of Stock </span>
+          <span className="text-red">  30 </span>
         </div>
       </div>
 
