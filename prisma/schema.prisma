@@ -90,8 +90,6 @@ model Product {
 model Category {
   id        String    @id @default(cuid())
   name      String    @unique // Nama kategori harus unik
-  // Deskripsi kategori, jika perlu
-  // description String?
 
   products  Product[] // Setiap kategori bisa memiliki banyak produk
 }
