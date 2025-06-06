@@ -7,17 +7,17 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Breadcrumb from '@/components/Common/Breadcrumb';
-import { FiShoppingBag, FiMapPin, FiCalendar, FiArrowLeft, FiClipboard } from 'react-icons/fi';
+import { FiShoppingBag, FiMapPin, FiCalendar, FiArrowLeft, FiClipboard, FiAlertCircle } from 'react-icons/fi';
 
-// --- DEFINISI TIPE DATA ---
+// --- DEFINISI TIPE DATA (DENGAN PERBAIKAN) ---
 interface OrderItem {
   id: string;
   quantity: number;
   priceAtPurchase: number;
-  product: {
+  product: { // Objek produk bisa jadi null jika produk sudah dihapus
     title: string;
     imagePreviews: string[];
-  };
+  } | null;
 }
 interface OrderDetails {
   id: string;
@@ -71,7 +71,7 @@ const UserOrderDetailsPage = () => {
   }, [sessionStatus, fetchOrderDetails]);
 
   const formatDate = (dateString: string) => new Date(dateString).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
-
+  
   const getStatusBadgeClass = (status: string): string => {
     switch (status?.toUpperCase()) {
       case 'PAID': case 'SHIPPED': case 'DELIVERED': case 'COMPLETED': return 'bg-green-100 text-green-800';
@@ -156,15 +156,24 @@ const UserOrderDetailsPage = () => {
                 {order.items.map(item => (
                   <div key={item.id} className="flex items-center gap-4 bg-gray-50 p-3 rounded-lg">
                     <Image
-                      src={item.product.imagePreviews[0] || 'https://placehold.co/100x100/F3F4F6/9CA3AF?text=No+Img'}
-                      alt={item.product.title}
+                      src={item.product?.imagePreviews?.[0] ?? 'https://placehold.co/100x100/F3F4F6/9CA3AF?text=No+Img'}
+                      alt={item.product?.title ?? 'Product not available'}
                       width={80}
                       height={80}
-                      className="w-20 h-20 rounded-md object-cover flex-shrink-0"
+                      className="w-20 h-20 rounded-md object-cover flex-shrink-0 bg-gray-200"
                     />
                     <div className="flex-grow">
-                      <p className="font-medium text-gray-800">{item.product.title}</p>
-                      <p className="text-xs text-gray-500">Qty: {item.quantity} @ Rp {item.priceAtPurchase.toLocaleString('id-ID')}</p>
+                      {item.product ? (
+                        <>
+                          <p className="font-medium text-gray-800">{item.product.title}</p>
+                          <p className="text-xs text-gray-500">Qty: {item.quantity} @ Rp {item.priceAtPurchase.toLocaleString('id-ID')}</p>
+                        </>
+                      ) : (
+                        <div className="flex flex-col justify-center">
+                            <p className="font-medium text-gray-500 italic">Product no longer available</p>
+                            <p className="text-xs text-gray-400">This item was part of your order.</p>
+                        </div>
+                      )}
                     </div>
                     <p className="font-semibold text-gray-900">
                       Rp {(item.priceAtPurchase * item.quantity).toLocaleString('id-ID')}
