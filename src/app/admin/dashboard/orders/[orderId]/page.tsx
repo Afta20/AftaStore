@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // Impor komponen Image dari Next.js
 import { useParams, useRouter } from 'next/navigation';
 import { FiShoppingBag, FiUser, FiMapPin, FiCalendar, FiArrowLeft, FiEdit } from 'react-icons/fi';
 
@@ -42,9 +43,6 @@ const OrderDetailsPage = () => {
   const [newStatus, setNewStatus] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
-  /**
-   * Mengambil detail pesanan dari API backend.
-   */
   const fetchOrderDetails = useCallback(async () => {
     if (!orderId) return;
     setLoading(true);
@@ -53,11 +51,11 @@ const OrderDetailsPage = () => {
       const response = await fetch(`/api/admin/orders/${orderId}`);
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.message || 'Gagal mengambil detail pesanan.');
+        throw new Error(errData.message || 'Failed to retrieve order details.');
       }
       const data: OrderDetails = await response.json();
       setOrder(data);
-      setNewStatus(data.status); // Set status dropdown ke status pesanan saat ini
+      setNewStatus(data.status);
     } catch (err: any) {
       setError(err.message);
       console.error("Fetch order details error:", err);
@@ -70,9 +68,6 @@ const OrderDetailsPage = () => {
     fetchOrderDetails();
   }, [fetchOrderDetails]);
 
-  /**
-   * Menangani pembaruan status pesanan.
-   */
   const handleStatusUpdate = async () => {
     if (!orderId || !newStatus || newStatus === order?.status) return;
     setIsUpdating(true);
@@ -84,11 +79,10 @@ const OrderDetailsPage = () => {
       });
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.message || 'Gagal memperbarui status.');
+        throw new Error(errData.message || 'Failed to update status.');
       }
-      // Refresh data setelah update berhasil
       fetchOrderDetails();
-      alert('Status pesanan berhasil diperbarui!');
+      alert('Order status updated successfully!');
     } catch (err: any) {
       alert(`Error: ${err.message}`);
       console.error("Update status error:", err);
@@ -99,7 +93,7 @@ const OrderDetailsPage = () => {
 
   const formatDate = (dateString: string) => new Date(dateString).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
   
-  const getStatusBadgeClass = (status: string) => { /* ... (fungsi sama seperti di halaman daftar pesanan) ... */
+  const getStatusBadgeClass = (status: string) => {
     switch (status?.toUpperCase()) {
       case 'PAID': case 'SHIPPED': case 'DELIVERED': case 'COMPLETED': return 'bg-green-100 text-green-800';
       case 'PENDING': return 'bg-yellow-100 text-yellow-800';
@@ -108,13 +102,13 @@ const OrderDetailsPage = () => {
     }
   };
 
-  if (loading) { /* ... Tampilan Loading ... */
+  if (loading) {
     return <div className="p-8 text-center text-gray-600">Loading order details...</div>;
   }
-  if (error) { /* ... Tampilan Error ... */
+  if (error) {
     return <div className="p-8 text-center text-red-600">Error: {error}</div>;
   }
-  if (!order) { /* ... Tampilan Pesanan Tidak Ditemukan ... */
+  if (!order) {
     return <div className="p-8 text-center text-gray-600">Order not found.</div>;
   }
 
@@ -140,7 +134,6 @@ const OrderDetailsPage = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Kolom Kiri: Detail Pesanan dan Pelanggan */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold text-gray-700 mb-4">Order Summary</h2>
@@ -161,7 +154,8 @@ const OrderDetailsPage = () => {
             {order.customerNotes && (
                  <div className="mt-4">
                      <p className="text-gray-500 text-sm">Customer Notes</p>
-                     <p className="font-medium text-gray-800 mt-1 p-3 bg-yellow-50 border border-yellow-200 rounded-md italic">"{order.customerNotes}"</p>
+                     {/* Perbaikan untuk unescaped-entities */}
+                     <p className="font-medium text-gray-800 mt-1 p-3 bg-yellow-50 border border-yellow-200 rounded-md italic">&ldquo;{order.customerNotes}&rdquo;</p>
                  </div>
             )}
           </div>
@@ -170,7 +164,8 @@ const OrderDetailsPage = () => {
             <h2 className="text-xl font-semibold text-gray-700 mb-4">Customer Details</h2>
              {order.user ? (
                 <div className="flex items-center gap-4">
-                  <img src={order.user.image || 'https://placehold.co/100x100/EBF4FF/76A9FA?text=U'} alt="User Avatar" className="w-16 h-16 rounded-full object-cover" />
+                  {/* Perbaikan: Menggunakan komponen Image */}
+                  <Image src={order.user.image || 'https://placehold.co/100x100/EBF4FF/76A9FA?text=U'} alt="User Avatar" width={64} height={64} className="w-16 h-16 rounded-full object-cover" />
                   <div>
                     <p className="font-bold text-lg text-gray-800">{order.user.name}</p>
                     <p className="text-sm text-gray-600">{order.user.email}</p>
@@ -180,16 +175,18 @@ const OrderDetailsPage = () => {
           </div>
         </div>
 
-        {/* Kolom Kanan: Daftar Item dan Update Status */}
         <div className="lg:col-span-1 space-y-6">
            <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold text-gray-700 mb-4">Items Ordered</h2>
               <ul className="divide-y divide-gray-200">
                 {order.items.map(item => (
                   <li key={item.id} className="py-4 flex gap-4">
-                    <img
+                    {/* Perbaikan: Menggunakan komponen Image */}
+                    <Image
                       src={item.product.imagePreviews[0] || 'https://placehold.co/100x100/F3F4F6/9CA3AF?text=No+Img'}
                       alt={item.product.title}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 rounded-md object-cover flex-shrink-0"
                     />
                     <div className="flex-grow">
