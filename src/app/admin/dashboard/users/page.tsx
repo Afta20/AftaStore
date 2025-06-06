@@ -1,188 +1,288 @@
 // File: src/app/admin/dashboard/users/page.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { FiUsers, FiArrowLeft } from 'react-icons/fi'; // Contoh ikon, pastikan react-icons terinstal
+import { FiUsers, FiArrowLeft, FiEdit3, FiTrash2, FiSearch } from 'react-icons/fi';
 
-// Definisikan tipe User (sesuaikan dengan data yang kamu fetch)
+/**
+ * @interface User
+ * Mendefinisikan struktur objek untuk data pengguna.
+ * @property {string} id - ID unik pengguna.
+ * @property {string | null} name - Nama lengkap pengguna.
+ * @property {string | null} email - Alamat email pengguna.
+ * @property {string | null} role - Peran pengguna dalam sistem (misalnya, 'admin', 'user', 'editor').
+ * @property {string} createdAt - Tanggal dan waktu pembuatan akun pengguna, dalam format string ISO.
+ * @property {string | null} [image] - URL opsional ke gambar avatar pengguna.
+ */
 interface User {
   id: string;
   name: string | null;
   email: string | null;
-  role: string | null; // Misalnya: 'admin', 'user'
-  createdAt: string; // Atau Date, lalu format
-  image?: string | null; // Opsional: URL gambar profil pengguna
-  // Tambahkan field lain jika ada, misal: status, lastLogin, dll.
+  role: string | null;
+  createdAt: string;
+  image?: string | null;
 }
 
+/**
+ * Komponen `ManageUsersPage` adalah halaman untuk menampilkan, mencari, dan mengelola
+ * daftar pengguna dalam dashboard admin.
+ * @returns {JSX.Element} Halaman antarmuka untuk manajemen pengguna.
+ */
 const ManageUsersPage = () => {
+  /** State untuk menyimpan daftar semua pengguna yang diambil dari API. */
   const [users, setUsers] = useState<User[]>([]);
+  /** State untuk menandakan status loading saat mengambil data pengguna. */
   const [loading, setLoading] = useState(true);
+  /** State untuk menyimpan pesan error jika terjadi kesalahan saat pengambilan data. */
   const [error, setError] = useState<string | null>(null);
+  /** State untuk menyimpan term pencarian yang dimasukkan pengguna. */
+  const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // const response = await fetch('/api/admin/users', {credentials: 'include'}); // Panggil API route Anda
-        // if (!response.ok) {
-        //   throw new Error(`Failed to fetch users: ${response.statusText}`);
-        // }
-        // const data = await response.json();
-        // setUsers(data);
-
-        // --- MOCK DATA PENGGANTI SEMENTARA API ---
-        // Hapus atau ganti ini saat API Anda siap
-        const mockUsers: User[] = [
-          { id: 'user1', name: 'Afta Fauzan', email: 'afta.fauzan@example.com', role: 'admin', createdAt: new Date().toISOString(), image: 'https://placehold.co/100x100/EBF4FF/76A9FA?text=AF' },
-          { id: 'user2', name: 'Budi Santoso', email: 'budi.santoso@example.com', role: 'user', createdAt: new Date(Date.now() - 86400000 * 5).toISOString(), image: 'https://placehold.co/100x100/E6FFFA/38B2AC?text=BS' },
-          { id: 'user3', name: 'Citra Lestari', email: 'citra.lestari@example.com', role: 'user', createdAt: new Date(Date.now() - 86400000 * 10).toISOString(), image: null },
-          { id: 'user4', name: 'Devi Anggraini', email: 'devi.anggraini@example.com', role: 'editor', createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), image: 'https://placehold.co/100x100/FFF5EB/F97316?text=DA'  },
-        ];
-        setUsers(mockUsers);
-        // --- AKHIR MOCK DATA ---
-
-      } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching users data.');
-        console.error(err);
-      } finally {
-        setLoading(false);
+  /**
+   * Fungsi `fetchUsers` mengambil daftar pengguna dari endpoint API `/api/admin/users`.
+   * Fungsi ini menggunakan `useCallback` untuk memoization, berguna jika diteruskan sebagai prop
+   * atau digunakan dalam dependency array `useEffect` lainnya.
+   */
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/admin/users');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: `HTTP error! status: ${response.status}` }));
+        throw new Error(errorData.message || `Failed to fetch users: ${response.statusText}`);
       }
-    };
-
-    fetchUsers();
+      const data: User[] = await response.json();
+      setUsers(data);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while fetching users.');
+      console.error("Fetch users error:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]); // fetchUsers dimasukkan sebagai dependensi karena sudah di-memoize dengan useCallback.
 
-  const getRoleBadgeClass = (role: string | null) => {
-    switch (role?.toLowerCase()) {
-      case 'admin':
-        return 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100';
-      case 'editor':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100';
-      case 'user':
-      default:
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100';
+  /**
+   * Memformat string tanggal ISO menjadi format tanggal lokal Indonesia (misalnya, "6 Juni 2025").
+   * @param {string} dateString - String tanggal dalam format ISO yang akan diformat.
+   * @returns {string} Representasi string tanggal yang sudah diformat, atau 'N/A' jika input tidak valid.
+   */
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch (e) {
+      // Menangani kasus jika dateString tidak valid dan menyebabkan error pada constructor Date
+      console.error("Invalid date string for formatDate:", dateString, e);
+      return 'Invalid Date';
     }
   };
 
+  /**
+   * Mengembalikan string kelas CSS Tailwind berdasarkan peran pengguna untuk styling badge.
+   * @param {string | null} role - Peran pengguna (misalnya, 'admin', 'editor', 'user').
+   * @returns {string} String kelas CSS untuk badge peran.
+   */
+  const getRoleBadgeClass = (role: string | null): string => {
+    switch (role?.toLowerCase()) {
+      case 'admin':
+        return 'bg-red-100 text-red-700';
+      case 'editor':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'user':
+      default:
+        return 'bg-blue-100 text-blue-700';
+    }
+  };
+
+  /**
+   * Menyaring daftar pengguna berdasarkan `searchTerm`.
+   * Pencarian dilakukan pada nama, email, dan peran pengguna (case-insensitive).
+   */
+  const filteredUsers = users.filter(user =>
+    (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (user.role?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+  );
+
+  /**
+   * Menangani aksi penghapusan pengguna.
+   * Memunculkan dialog konfirmasi sebelum melanjutkan.
+   * Implementasi API delete sesungguhnya perlu ditambahkan.
+   * @param {string} userId - ID dari pengguna yang akan dihapus.
+   */
+  const handleDeleteUser = async (userId: string) => {
+    if (window.confirm(`Anda yakin ingin menghapus pengguna dengan ID: ${userId}? Tindakan ini tidak dapat diurungkan.`)) {
+      console.log("Attempting to delete user:", userId);
+      // TODO: Implementasikan pemanggilan API DELETE ke /api/admin/users/${userId}
+      // Contoh:
+      // setLoading(true);
+      // try {
+      //   const response = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+      //   if (!response.ok) {
+      //     const errorData = await response.json().catch(() => ({}));
+      //     throw new Error(errorData.message || 'Gagal menghapus pengguna.');
+      //   }
+      //   alert('Pengguna berhasil dihapus.');
+      //   fetchUsers(); // Refresh daftar pengguna
+      // } catch (err: any) {
+      //   setError(err.message || 'Gagal menghapus pengguna.');
+      //   console.error("Delete user error:", err);
+      //   alert(`Error: ${err.message || 'Gagal menghapus pengguna.'}`);
+      // } finally {
+      //   setLoading(false);
+      // }
+      alert(`Fungsi hapus untuk pengguna ${userId} belum diimplementasikan di backend.`);
+    }
+  };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-lg text-gray-600 dark:text-gray-300">Loading users...</p>
-        {/* Tambahkan spinner jika mau */}
+      <div className="flex flex-col justify-center items-center min-h-[calc(100vh-200px)] p-4">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
+        <p className="text-lg text-gray-600">Loading users data...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md">
-        <p className="text-red-700 dark:text-red-300 font-medium">Error: {error}</p>
+      <div className="p-4 md:p-6 lg:p-8">
+        <div className="p-6 bg-red-50 border border-red-200 rounded-md text-center">
+          <h2 className="text-xl font-semibold text-red-700 mb-2">Oops! Something went wrong.</h2>
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={fetchUsers} // Menggunakan fungsi fetchUsers yang sudah di-memoize
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm font-medium"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
         <div>
-          <h1 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-white flex items-center gap-2">
-            <FiUsers className="text-blue-500" />
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-800 flex items-center gap-3">
+            <FiUsers size={28} className="text-blue-600" />
             Manage Users
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            View and manage user accounts in your system.
+          <p className="text-sm text-gray-500 mt-1">
+            View, search, and manage user accounts in the system.
           </p>
         </div>
-        <Link
-          href="/admin/dashboard"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm font-medium shadow-sm"
-        >
-          <FiArrowLeft />
-          Back to Dashboard
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          {/*
+            Placeholder untuk tombol "Add New User".
+            Aktifkan jika halaman dan fungsionalitasnya sudah ada.
+            <Link
+              href="/admin/dashboard/users/new"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-sm font-medium shadow-sm"
+            >
+              <FiPlusCircle size={18}/>
+              Add New User
+            </Link>
+          */}
+          <Link
+            href="/admin/dashboard"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm font-medium shadow-sm"
+          >
+            <FiArrowLeft size={18} />
+            Back to Dashboard
+          </Link>
+        </div>
       </div>
 
-      {/* TODO: Tambahkan tombol "Add New User" jika fungsionalitasnya ada
-      <div className="mb-6 text-right">
-        <Link
-          href="/admin/dashboard/users/new"
-          className="px-5 py-2.5 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-sm font-medium shadow-sm"
-        >
-          Add New User
-        </Link>
+      <div className="mb-6">
+        <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search users by name, email, or role..."
+              className="w-full px-4 py-2.5 pl-10 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+        </div>
       </div>
-      */}
 
-      {users.length === 0 ? (
-        <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <FiUsers size={48} className="mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-            <p className="text-gray-500 dark:text-gray-400 text-lg">No users found.</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                There are currently no users to display.
+      {filteredUsers.length === 0 ? (
+        <div className="text-center py-10 bg-white rounded-lg shadow">
+            <FiUsers size={48} className="mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-600 text-lg font-medium">
+              {searchTerm ? 'No users found matching your search.' : 'No users found.'}
             </p>
+            {searchTerm && (
+                 <p className="text-sm text-gray-400 mt-2">
+                    Try adjusting your search terms.
+                 </p>
+            )}
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+        <div className="bg-white shadow-xl rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <table className="w-full min-w-full text-sm text-left text-gray-500">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-100">
                 <tr>
-                  <th scope="col" className="px-6 py-3 w-12"></th> {/* Kolom untuk avatar */}
+                  <th scope="col" className="px-6 py-3 w-16 text-center">Avatar</th>
                   <th scope="col" className="px-6 py-3">Name</th>
                   <th scope="col" className="px-6 py-3">Email</th>
-                  <th scope="col" className="px-6 py-3">Role</th>
+                  <th scope="col" className="px-6 py-3 text-center">Role</th>
                   <th scope="col" className="px-6 py-3">Joined Date</th>
-                  {/* <th scope="col" className="px-6 py-3 text-center">Actions</th> */}
+                  <th scope="col" className="px-6 py-3 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
-                  <tr key={user.id} className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                    <td className="px-6 py-4">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="bg-white border-b hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 flex justify-center">
                       {user.image ? (
-                        <img src={user.image} alt={user.name || 'User Avatar'} className="w-10 h-10 rounded-full object-cover" />
+                        <img src={user.image} alt={user.name || 'User Avatar'} className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-200" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-semibold">
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold text-xs">
                           {user.name ? user.name.substring(0, 2).toUpperCase() : 'N/A'}
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                      {user.name || <span className="italic text-gray-400 dark:text-gray-500">No Name</span>}
+                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                      {user.name || <span className="italic text-gray-400">No Name Provided</span>}
                     </td>
-                    <td className="px-6 py-4">
-                      {user.email || <span className="italic text-gray-400 dark:text-gray-500">No Email</span>}
+                    <td className="px-6 py-4 text-gray-600">
+                      {user.email || <span className="italic text-gray-400">No Email Provided</span>}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${getRoleBadgeClass(user.role)}`}>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getRoleBadgeClass(user.role)}`}>
                         {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User'}
                       </span>
                     </td>
-                    <td className="px-6 py-4">{formatDate(user.createdAt)}</td>
-                    {/* <td className="px-6 py-4 text-center whitespace-nowrap">
-                      <Link href={`/admin/dashboard/users/edit/${user.id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline mr-3">
-                        Edit
+                    <td className="px-6 py-4 text-gray-600">{formatDate(user.createdAt)}</td>
+                    <td className="px-6 py-4 text-center whitespace-nowrap">
+                      {/* Placeholder: Ganti dengan Link ke halaman edit pengguna jika ada */}
+                      <Link href={`/admin/dashboard/users/edit/${user.id}`} className="font-medium text-blue-600 hover:text-blue-800 hover:underline mr-4 transition-colors">
+                        <FiEdit3 className="inline -mt-1 mr-1" />Edit
                       </Link>
-                      <button 
-                        onClick={() => console.log('Delete user:', user.id)} // Ganti dengan fungsi delete
-                        className="font-medium text-red-600 dark:text-red-500 hover:underline"
+                      <button
+                        onClick={() => handleDeleteUser(user.id)}
+                        className="font-medium text-red-600 hover:text-red-800 hover:underline transition-colors"
+                        title={`Delete user ${user.name || user.id}`}
                       >
-                        Delete
+                        <FiTrash2 className="inline -mt-1 mr-1" />Delete
                       </button>
                     </td>
-                    */}
                   </tr>
                 ))}
               </tbody>
