@@ -255,6 +255,7 @@ const ManageProductsPage = () => {
                   <th scope="col" className="px-6 py-3">Image</th>
                   <th scope="col" className="px-6 py-3">Title</th>
                   <th scope="col" className="px-6 py-3">Price</th>
+                  <th scope="col" className="px-6 py-3">Stock</th>
                   <th scope="col" className="px-6 py-3">Created At</th>
                   <th scope="col" className="px-6 py-3">Actions</th>
                 </tr>
