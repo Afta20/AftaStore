@@ -288,7 +288,7 @@ const AdminDashboardPage = () => {
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-300">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">This Month's Income</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">This Month&apos;s Income</h3>
             <p className="mt-1 text-3xl font-semibold text-purple-600 dark:text-purple-400">
               Rp {summaryData.monthlyRevenue.toLocaleString('id-ID')}
             </p>
