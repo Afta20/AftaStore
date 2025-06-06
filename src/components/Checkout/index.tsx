@@ -19,7 +19,7 @@ import PaymentMethod from "@/components/Checkout/PaymentMethod"; // Sesuaikan pa
 import Coupon from "@/components/Checkout/Coupon";       // Sesuaikan path jika perlu
 
 interface CartItem {
-  id: string | number;
+  id: string;
   title: string;
   price: number; 
   quantity: number;
