@@ -138,7 +138,7 @@ const EditProductPage = () => {
 
   // Tampilan loading data awal
   if (loadingInitial) {
-    return <div className="p-8 text-center">Memuat data produk...</div>;
+    return <div className="p-8 text-center">Loading...</div>;
   }
   
   // Gaya dasar (bisa diganti dengan kelas Tailwind jika sudah berfungsi)
@@ -151,7 +151,7 @@ const EditProductPage = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-white">Edit Product</h1>
         <Link href="/admin/dashboard/products" className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors text-sm font-medium">
-          Kembali ke Daftar Produk
+          Back
         </Link>
       </div>
 
@@ -160,37 +160,37 @@ const EditProductPage = () => {
 
       <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-lg shadow-md space-y-6">
         <div>
-          <label htmlFor="title" style={labelStyle}>Judul Produk:</label>
+          <label htmlFor="title" style={labelStyle}>Product:</label>
           <input type="text" id="title" name="title" value={formData.title} onChange={handleInputChange} required style={inputStyle} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <label htmlFor="price" style={labelStyle}>Harga (Rp):</label>
+                <label htmlFor="price" style={labelStyle}>Price (Rp):</label>
                 <input type="number" id="price" name="price" value={formData.price} onChange={handleInputChange} required style={inputStyle} />
             </div>
             <div>
-                <label htmlFor="stock" style={labelStyle}>Jumlah Stok:</label>
+                <label htmlFor="stock" style={labelStyle}>Stock:</label>
                 <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleInputChange} required style={inputStyle} />
             </div>
         </div>
 
         <div>
-          <label htmlFor="imagePreviews" style={labelStyle}>URL Gambar (pisahkan dengan koma):</label>
+          <label htmlFor="imagePreviews" style={labelStyle}>URL Image:</label>
           <input type="text" id="imagePreviews" name="imagePreviews" value={formData.imagePreviews} onChange={handleInputChange} placeholder="contoh: /url1.jpg, /url2.jpg" style={inputStyle} />
         </div>
         <div>
-          <label htmlFor="description" style={labelStyle}>Deskripsi (Opsional):</label>
+          <label htmlFor="description" style={labelStyle}>Description (Optional):</label>
           <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} rows={5} style={inputStyle} />
         </div>
         <div>
-          <label htmlFor="categoryId" style={labelStyle}>Kategori (Opsional):</label>
-          <select id="categoryId" name="categoryId" value={formData.categoryId} onChange={handleInputChange} style={inputStyle}>
-            <option value="">-- Pilih Kategori --</option>
+          <label htmlFor="categoryId" style={labelStyle}>Category (Optional):</label>
+            <select id="categoryId" name="categoryId" value={formData.categoryId} onChange={handleInputChange} style={inputStyle}>
+            <option value="">-- Choose Category --</option>
             {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
-          </select>
+            </select>
         </div>
         <div className="pt-4">
           <button type="submit" disabled={loading} style={{...buttonStyle, opacity: loading ? 0.6 : 1}}>
