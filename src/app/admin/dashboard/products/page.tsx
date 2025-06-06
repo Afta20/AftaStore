@@ -244,7 +244,7 @@ const ManageProductsPage = () => {
             </p>
           </div>
         </div>
-        {loadingChartData && <p className="text-center text-gray-500 dark:text-gray-400">Memuat data grafik...</p>}
+        {loadingChartData && <p className="text-center text-gray-500 dark:text-gray-400">Loading Graphic data...</p>}
         {chartError && <p className="text-center text-red-500">{chartError}</p>}
         {categoryPieData && !loadingChartData && !chartError && categoryDistribution && categoryDistribution.labels.length > 0 && (
           <div className="max-w-md mx-auto h-72 md:h-96">
@@ -256,7 +256,7 @@ const ManageProductsPage = () => {
         )}
       </div>
 
-      {loadingProducts && <p className="text-center text-gray-500 dark:text-gray-400">Memuat daftar produk...</p>}
+      {loadingProducts && <p className="text-center text-gray-500 dark:text-gray-400">Loading Products...</p>}
       {productError && <p className="text-center text-red-500 py-4">Error: {productError}</p>}
 
       {!loadingProducts && !productError && (

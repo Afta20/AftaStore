@@ -212,7 +212,7 @@ const AdminDashboardPage = () => {
   // Pastikan Anda menggunakan 'categoryPieChartData' untuk data Pie/Doughnut chart
   
   if (loading) {
-    return <div className="p-6 text-center text-gray-700">Memuat data dashboard...</div>;
+    return <div className="p-6 text-center text-gray-700">Loading dashboard data...</div>;
   }
 
   // Error global bisa ditampilkan di sini, atau Anda bisa menangani error per fetch
