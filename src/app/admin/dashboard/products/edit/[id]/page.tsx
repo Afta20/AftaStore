@@ -15,7 +15,7 @@ interface ProductFormData {
   title: string;
   price: string;
   stock: string;
-  imagePreviews: string; // Disimpan sebagai string dipisah koma di form
+  imagePreviews: string; 
   description: string;
   categoryId: string;
 }

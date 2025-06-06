@@ -224,12 +224,12 @@ const AdminDashboardPage = () => {
     labels: monthlySales.labels,
     datasets: [
       {
-        label: 'Pendapatan (Rp)', data: monthlySales.revenues,
+        label: 'Income (Rp)', data: monthlySales.revenues,
         borderColor: 'rgb(54, 162, 235)', backgroundColor: 'rgba(54, 162, 235, 0.5)',
         yAxisID: 'y', tension: 0.1,
       },
       {
-        label: 'Jumlah Pesanan', data: monthlySales.orders,
+        label: 'Number of orders', data: monthlySales.orders,
         borderColor: 'rgb(255, 99, 132)', backgroundColor: 'rgba(255, 99, 132, 0.5)',
         yAxisID: 'y1', tension: 0.1,
       },
@@ -238,16 +238,16 @@ const AdminDashboardPage = () => {
 
   const salesChartOptions = {
     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index' as const, intersect: false },
-    stacked: false, plugins: { title: { display: true, text: 'Grafik Pendapatan & Jumlah Pesanan Bulanan' }, legend: { position: 'top' as const }},
-    scales: { y: { type: 'linear' as const, display: true, position: 'left' as const, title: { display: true, text: 'Pendapatan (Rp)'}},
-              y1: { type: 'linear' as const, display: true, position: 'right' as const, title: { display: true, text: 'Jumlah Pesanan'}, grid: { drawOnChartArea: false }}}
+    stacked: false, plugins: { title: { display: true, text: 'Graph of Revenue and Number of Monthly Orders' }, legend: { position: 'top' as const }},
+    scales: { y: { type: 'linear' as const, display: true, position: 'left' as const, title: { display: true, text: 'Income (Rp)'}},
+              y1: { type: 'linear' as const, display: true, position: 'right' as const, title: { display: true, text: 'Number of orders'}, grid: { drawOnChartArea: false }}}
   };
 
   const categoryPieChartData = targetCategoryDistribution ? {
     labels: targetCategoryDistribution.labels,
     datasets: [
       {
-        label: 'Distribusi Kategori',
+        label: 'Distribution of Products by Kategori',
         data: targetCategoryDistribution.counts,
         backgroundColor: [
           'rgba(54, 162, 235, 0.8)', 
@@ -264,37 +264,37 @@ const AdminDashboardPage = () => {
 
   const categoryPieChartOptions = {
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'top' as const }, title: { display: true, text: 'Distribusi Produk (Elektronik vs Aksesoris Komp.)' }}
+    plugins: { legend: { position: 'top' as const }, title: { display: true, text: 'Distribution of Product (Elektronik vs Aksesoris Komp.)' }}
   };
 
   return (
     <div className="space-y-6 md:space-y-8 p-4 md:p-6 lg:p-8">
       <h1 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-white">
-        Dashboard Admin
+        Admin Dashboard
       </h1>
 
       {summaryData && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-300">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Pengguna</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Users</h3>
             <p className="mt-1 text-3xl font-semibold text-blue-600 dark:text-blue-400">
               {summaryData.totalUsers.toLocaleString('id-ID')}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-300">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Pesanan</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Orders</h3>
             <p className="mt-1 text-3xl font-semibold text-green-600 dark:text-green-400">
               {summaryData.totalOrders.toLocaleString('id-ID')}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-300">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pendapatan Bulan Ini</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">This Month's Income</h3>
             <p className="mt-1 text-3xl font-semibold text-purple-600 dark:text-purple-400">
               Rp {summaryData.monthlyRevenue.toLocaleString('id-ID')}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-300">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Produk Terjual (Bulan Ini)</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Products Sold (This Month)</h3>
             <p className="mt-1 text-3xl font-semibold text-yellow-500 dark:text-yellow-400">
               {summaryData.productsSoldThisMonth.toLocaleString('id-ID')}
             </p>
@@ -322,7 +322,7 @@ const AdminDashboardPage = () => {
       </div>
       
       <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-white mb-4">Pesanan Terbaru</h2>
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-white mb-4">New Order</h2>
         <p className="text-gray-500 dark:text-gray-400">Belum ada data pesanan terbaru.</p>
       </div>
     </div>

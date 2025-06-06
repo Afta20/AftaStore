@@ -131,7 +131,7 @@ const ManageProductsPage = () => {
     labels: categoryDistribution.labels,
     datasets: [
       {
-        label: 'Jumlah Produk',
+        label: 'Number of Products',
         data: categoryDistribution.counts,
         backgroundColor: [
           'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)',
@@ -230,15 +230,15 @@ const ManageProductsPage = () => {
         <h2 className="text-xl font-semibold text-gray-700 dark:text-white mb-6 text-center">Product Overview</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-8"> {/* Diubah ke 3 kolom */}
           <div style={cardStyle} className="dark:bg-gray-700">
-            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Produk</h3>
+            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Products</h3>
             <p style={cardStatStyle} className="dark:text-white">{loadingProducts ? '...' : products.length}</p>
           </div>
           <div style={cardStyle} className="dark:bg-gray-700">
-            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Stok</h3>
+            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Stocks</h3>
             <p style={cardStatStyle} className="dark:text-white">{loadingProducts ? '...' : totalStock.toLocaleString('id-ID')}</p>
           </div>
           <div style={cardStyle} className="dark:bg-gray-700">
-            <h3 style={cardTitleStyle} className="dark:text-gray-300">Kategori Unik</h3>
+            <h3 style={cardTitleStyle} className="dark:text-gray-300">Unique Categories</h3>
             <p style={cardStatStyle} className="dark:text-white">
               {loadingChartData || !categoryDistribution ? '...' : categoryDistribution.labels.length}
             </p>
@@ -261,7 +261,7 @@ const ManageProductsPage = () => {
 
       {!loadingProducts && !productError && (
         products.length === 0 ? (
-          <p className="text-center text-gray-500 dark:text-gray-400 py-4">Tidak ada produk ditemukan.</p>
+          <p className="text-center text-gray-500 dark:text-gray-400 py-4">No products found.</p>
         ) : (
           <div className="overflow-x-auto bg-white dark:bg-gray-800 shadow-md rounded-lg">
             <table className="w-full min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
