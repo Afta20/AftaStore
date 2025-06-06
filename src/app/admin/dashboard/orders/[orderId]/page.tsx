@@ -3,11 +3,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image'; // Impor komponen Image dari Next.js
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { FiShoppingBag, FiUser, FiMapPin, FiCalendar, FiArrowLeft, FiEdit } from 'react-icons/fi';
 
-// --- DEFINISI TIPE DATA ---
+// --- TYPE DEFINITIONS ---
 interface OrderItem {
   id: string;
   quantity: number;
@@ -51,7 +51,7 @@ const OrderDetailsPage = () => {
       const response = await fetch(`/api/admin/orders/${orderId}`);
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.message || 'Failed to retrieve order details.');
+        throw new Error(errData.message || 'Failed to fetch order details.');
       }
       const data: OrderDetails = await response.json();
       setOrder(data);
@@ -82,7 +82,7 @@ const OrderDetailsPage = () => {
         throw new Error(errData.message || 'Failed to update status.');
       }
       fetchOrderDetails();
-      alert('Order status updated successfully!');
+      alert('Order status has been updated successfully!');
     } catch (err: any) {
       alert(`Error: ${err.message}`);
       console.error("Update status error:", err);
@@ -91,7 +91,7 @@ const OrderDetailsPage = () => {
     }
   };
 
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
+  const formatDate = (dateString: string) => new Date(dateString).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
   
   const getStatusBadgeClass = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -154,7 +154,6 @@ const OrderDetailsPage = () => {
             {order.customerNotes && (
                  <div className="mt-4">
                      <p className="text-gray-500 text-sm">Customer Notes</p>
-                     {/* Perbaikan untuk unescaped-entities */}
                      <p className="font-medium text-gray-800 mt-1 p-3 bg-yellow-50 border border-yellow-200 rounded-md italic">&ldquo;{order.customerNotes}&rdquo;</p>
                  </div>
             )}
@@ -164,11 +163,17 @@ const OrderDetailsPage = () => {
             <h2 className="text-xl font-semibold text-gray-700 mb-4">Customer Details</h2>
              {order.user ? (
                 <div className="flex items-center gap-4">
-                  {/* Perbaikan: Menggunakan komponen Image */}
-                  <Image src={order.user.image || 'https://placehold.co/100x100/EBF4FF/76A9FA?text=U'} alt="User Avatar" width={64} height={64} className="w-16 h-16 rounded-full object-cover" />
+                  {/* --- AVATAR FIX --- */}
+                  {order.user.image ? (
+                    <Image src={order.user.image} alt="User Avatar" width={64} height={64} className="w-16 h-16 rounded-full object-cover ring-2 ring-gray-200" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-xl ring-2 ring-gray-300">
+                      {order.user.name ? order.user.name.substring(0, 2).toUpperCase() : 'N/A'}
+                    </div>
+                  )}
                   <div>
-                    <p className="font-bold text-lg text-gray-800">{order.user.name}</p>
-                    <p className="text-sm text-gray-600">{order.user.email}</p>
+                    <p className="font-bold text-lg text-gray-800">{order.user.name || 'No Name'}</p>
+                    <p className="text-sm text-gray-600">{order.user.email || 'No Email'}</p>
                   </div>
                 </div>
              ) : (<p className="text-gray-600">Guest user.</p>)}
@@ -181,7 +186,6 @@ const OrderDetailsPage = () => {
               <ul className="divide-y divide-gray-200">
                 {order.items.map(item => (
                   <li key={item.id} className="py-4 flex gap-4">
-                    {/* Perbaikan: Menggunakan komponen Image */}
                     <Image
                       src={item.product.imagePreviews[0] || 'https://placehold.co/100x100/F3F4F6/9CA3AF?text=No+Img'}
                       alt={item.product.title}
@@ -221,10 +225,23 @@ const OrderDetailsPage = () => {
                   <option key={status} value={status}>{status}</option>
                 ))}
              </select>
+             {/* --- UPDATE STATUS BUTTON FIX --- */}
              <button
                 onClick={handleStatusUpdate}
                 disabled={isUpdating || newStatus === order.status}
-                className="mt-4 w-full px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                style={{
+                  marginTop: '1rem',
+                  width: '100%',
+                  padding: '10px 16px',
+                  backgroundColor: (isUpdating || newStatus === order.status) ? '#9CA3AF' : '#2563EB', // gray-400 or blue-600
+                  color: 'white',
+                  fontWeight: 600,
+                  borderRadius: '0.5rem',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                  cursor: (isUpdating || newStatus === order.status) ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s',
+                  border: 'none',
+                }}
              >
                 {isUpdating ? 'Updating...' : 'Update Status'}
              </button>
