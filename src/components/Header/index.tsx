@@ -1,6 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useSession, signOut } from "next-auth/react";
+
 import CustomSelect from "./CustomSelect";
 import { menuData } from "./menuData";
 import Dropdown from "./Dropdown";
@@ -8,13 +11,15 @@ import { useAppSelector } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { selectTotalPrice } from "@/redux/features/cart-slice";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
-import Image from "next/image";
-import { useSession, signIn, signOut } from "next-auth/react";
+
+// Impor ikon dari react-icons untuk tampilan yang lebih bersih
+import { FiHeart, FiClipboard, FiSearch } from "react-icons/fi";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
+
   const { openCartModal } = useCartModalContext();
   const { data: session } = useSession();
   const product = useAppSelector((state) => state.cartReducer.items);
@@ -33,9 +38,13 @@ const Header = () => {
     }
   };
 
+  // Efek untuk menambahkan dan membersihkan event listener scroll
   useEffect(() => {
     window.addEventListener("scroll", handleStickyMenu);
-  });
+    return () => {
+        window.removeEventListener("scroll", handleStickyMenu);
+    };
+  }, []); // Dependency array kosong agar event listener hanya diregistrasi sekali
 
   const options = [
     { label: "All Categories", value: "0" },
@@ -73,14 +82,16 @@ const Header = () => {
             </Link>
 
             <div className="max-w-[475px] w-full">
-  <form
-    onSubmit={(e) => {
-      e.preventDefault();
-      if (searchQuery.trim()) {
-        window.location.href = `/shop-without-sidebar?query=${encodeURIComponent(searchQuery.trim())}`;
-      }
-    }}
-  >
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (searchQuery.trim()) {
+                    window.location.href = `/shop-without-sidebar?query=${encodeURIComponent(
+                      searchQuery.trim()
+                    )}`;
+                  }
+                }}
+              >
                 <div className="flex items-center">
                   <CustomSelect options={options} />
 
@@ -104,7 +115,7 @@ const Header = () => {
                       aria-label="Search"
                       className="flex items-center justify-center absolute right-3 top-1/2 -translate-y-1/2 ease-in duration-200 hover:text-blue"
                     >
-                      {/* SVG ICON */}
+                      <FiSearch className="w-5 h-5"/>
                     </button>
                   </div>
                 </div>
@@ -151,60 +162,65 @@ const Header = () => {
             </div>
 
             {/* <!-- divider --> */}
-            <span className="hidden xl:block w-px h-7.5 bg-gray-4"></span>
+            <span className="hidden xl:block w-px h-7.5 bg-gray-3"></span>
 
             <div className="flex w-full lg:w-auto justify-between items-center gap-5">
               <div className="flex items-center gap-5">
-          {session ? (
-            <div className="flex items-center gap-2.5">
-              {/* Icon Akun */}
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="text-dark"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
-                  fill="currentColor"
-                />
-              </svg>
-              <div>
-                <span className="block text-2xs text-dark-4 uppercase">Welcome</span>
-                <p className="font-medium text-custom-sm text-dark">
-                  {session.user?.name || session.user?.email}
-                </p>
-                <button
-                  onClick={() => signOut()}
-                  className="text-xs text-blue-600 underline mt-1"
-                >
-                  Sign Out
-                </button>
-              </div>
-            </div>
-          ) : (
-            <Link href="/signin" className="flex items-center gap-2.5">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="text-dark"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
-                  fill="currentColor"
-                />
-              </svg>
-              <div>
-                <span className="block text-2xs text-dark-4 uppercase">Account</span>
-                <p className="font-medium text-custom-sm text-dark">Sign In</p>
-              </div>
-            </Link>
-          )}
+                {session ? (
+                  <div className="flex items-center gap-2.5">
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="text-dark"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    <div>
+                      <span className="block text-2xs text-dark-4 uppercase">
+                        Welcome
+                      </span>
+                      <p className="font-medium text-custom-sm text-dark">
+                        {session.user?.name || session.user?.email}
+                      </p>
+                      <button
+                        onClick={() => signOut()}
+                        className="text-xs text-blue-600 underline mt-1"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <Link href="/signin" className="flex items-center gap-2.5">
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="text-dark"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    <div>
+                      <span className="block text-2xs text-dark-4 uppercase">
+                        Account
+                      </span>
+                      <p className="font-medium text-custom-sm text-dark">
+                        Sign In
+                      </p>
+                    </div>
+                  </Link>
+                )}
                 <button
                   onClick={handleOpenCartModal}
                   className="flex items-center gap-2.5"
@@ -297,7 +313,7 @@ const Header = () => {
                   </span>
                 </span>
               </button>
-              {/* //   <!-- Hamburger Toggle BTN --> */}
+              {/* <!-- Hamburger Toggle BTN --> */}
             </div>
           </div>
         </div>
@@ -342,11 +358,11 @@ const Header = () => {
                   )}
                 </ul>
               </nav>
-              {/* //   <!-- Main Nav End --> */}
+              {/* <!-- Main Nav End --> */}
             </div>
-            {/* // <!--=== Main Nav End ===--> */}
+            {/* <!--=== Main Nav End ===--> */}
 
-            {/* // <!--=== Nav Right Start ===--> */}
+            {/* <!--=== Nav Right Start ===--> */}
             <div className="hidden xl:block">
               <ul className="flex items-center gap-5.5">
                 <li className="py-4">
@@ -355,21 +371,21 @@ const Header = () => {
                     className="flex items-center gap-1.5 font-medium text-custom-sm text-dark hover:text-blue"
                   >
                     <svg
-                    className="stroke-current"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
+                      className="stroke-current"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
                       <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                       <line x1="3" y1="6" x2="21" y2="6"></line>
                       <path d="M16 10a4 4 0 0 1-8 0"></path>
-                  </svg>
+                    </svg>
                     Your Orders
                   </a>
                 </li>
@@ -405,4 +421,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Header
