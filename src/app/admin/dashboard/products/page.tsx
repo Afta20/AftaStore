@@ -18,6 +18,7 @@ interface Product {
   id: string;
   title: string;
   price: number;
+  stock?: number;
   imagePreviews: string[];
   reviews?: number | null;
   discountedPrice?: number | null;
@@ -163,6 +164,7 @@ const ManageProductsPage = () => {
   const cardStatStyle: React.CSSProperties = { /* ...style statistik kartu... */
     fontSize: '2.25rem', fontWeight: 'bold', color: '#1F2937',
   };
+  const totalStock = products.reduce((acc, product) => acc + (product.stock || 0), 0);
 
 
   return (
@@ -215,6 +217,10 @@ const ManageProductsPage = () => {
             <p style={cardStatStyle} className="dark:text-white">{loadingProducts ? '...' : products.length}</p>
           </div>
           <div style={cardStyle} className="dark:bg-gray-700">
+            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Stok</h3>
+            <p style={cardStatStyle} className="dark:text-white">{loadingProducts ? '...' : totalStock.toLocaleString('id-ID')}</p>
+          </div>
+          <div style={cardStyle} className="dark:bg-gray-700">
             <h3 style={cardTitleStyle} className="dark:text-gray-300">Kategori Unik</h3>
             <p style={cardStatStyle} className="dark:text-white">
               {loadingChartData || !categoryDistribution ? '...' : categoryDistribution.labels.length}
@@ -263,6 +269,15 @@ const ManageProductsPage = () => {
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{product.title}</td>
                     <td className="px-6 py-4">Rp. {product.price.toLocaleString('id-ID')}</td>
+                    <td className="px-6 py-4 font-semibold">
+                      <span
+                        style={{
+                          color: (product.stock || 0) <= 5 ? '#ef4444' : (product.stock || 0) <= 10 ? '#f59e0b' : '#10b981',
+                        }}
+                      >
+                        {product.stock}
+                      </span>
+                    </td>
                     <td className="px-6 py-4">{new Date(product.createdAt).toLocaleDateString('id-ID')}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {/* Tombol Edit dengan inline style */}

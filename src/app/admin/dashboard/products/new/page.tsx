@@ -15,6 +15,7 @@ const AddNewProductPage = () => {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
+  const [stock, setStock] = useState('');
   const [imagePreviews, setImagePreviews] = useState(''); // Untuk sementara, simpan URL gambar sebagai string dipisah koma
   const [description, setDescription] = useState(''); // Tambahkan field deskripsi jika perlu
   const [categoryId, setCategoryId] = useState(''); // Untuk memilih kategori
@@ -56,7 +57,8 @@ const AddNewProductPage = () => {
 
     const productData = {
       title,
-      price: parseFloat(price), // Pastikan harga adalah angka
+      price: parseFloat(price), 
+      stock: parseInt(stock, 10),
       imagePreviews: imagePreviews.split(',').map(url => url.trim()).filter(url => url), // Ubah string jadi array URL
       description, // Tambahkan jika ada
       categoryId: categoryId || null, // Kirim null jika tidak ada kategori dipilih
@@ -79,6 +81,7 @@ const AddNewProductPage = () => {
       setSuccessMessage('Product added successfully!');
       setTitle('');
       setPrice('');
+      setStock('');
       setImagePreviews('');
       setDescription('');
       setCategoryId('');

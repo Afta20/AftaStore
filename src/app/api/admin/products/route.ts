@@ -15,11 +15,12 @@ export async function GET(req: NextRequest) {
   try {
     const products = await prisma.product.findMany({
       orderBy: { createdAt: 'desc' },
-            take: 10,
+      take: 10,
       select: { // Hanya ambil field yang dibutuhkan untuk daftar
     id: true,
     title: true,
     price: true,
+    stock: true,
     imagePreviews: true, // Ambil hanya gambar pertama jika cukup
     createdAt: true,
   }
@@ -41,18 +42,22 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, price, imagePreviews, description, categoryId } = body;
+    const { title, price, stock, imagePreviews, description, categoryId } = body;
 
-    if (!title || price == null) { // Cek price juga
+    if (!title || price == null || stock == null) { 
       return NextResponse.json({ message: 'Title and Price are required' }, { status: 400 });
     }
 
-    // Validasi lebih lanjut bisa ditambahkan di sini (misalnya, tipe data)
+    const stockNumber = parseInt(stock, 10);
+    if (isNaN(stockNumber) || stockNumber < 0) {
+        return NextResponse.json({ message: 'Stock must be a valid non-negative number.' }, { status: 400 });
+    }
 
     const newProduct = await prisma.product.create({
       data: {
         title,
-        price: parseFloat(price), // Pastikan price adalah angka
+        price: parseFloat(price), 
+        stock: stockNumber,
         imagePreviews: imagePreviews || [], // Default ke array kosong jika tidak ada
         description: description || null,
         // Hubungkan ke kategori jika categoryId ada
