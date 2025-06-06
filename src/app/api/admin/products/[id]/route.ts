@@ -150,7 +150,7 @@ export async function DELETE(
   const productId: string = idParam;
 
   try {
-    await prisma.product.delete({
+    await prisma.product.update({
       where: { id: productId },
       data: { status: 'ARCHIVED' },
     });
