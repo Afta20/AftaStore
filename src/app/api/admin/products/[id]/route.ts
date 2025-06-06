@@ -152,6 +152,7 @@ export async function DELETE(
   try {
     await prisma.product.delete({
       where: { id: productId },
+      data: { status: 'ARCHIVED' },
     });
 
     return NextResponse.json({ message: 'Product deleted successfully' }, { status: 200 });
