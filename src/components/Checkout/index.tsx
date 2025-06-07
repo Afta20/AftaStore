@@ -92,7 +92,7 @@ console.log("Isi cartItems sebelum dikirim ke API:", JSON.stringify(cartItems, n
     // Data yang dikirim ke backend HANYA dari state yang dikelola Checkout.tsx ini
     const orderData = {
       cartItems: cartItems.map(item => ({
-        id: String(item.id),
+        id: item.id,
         title: item.title,
         price: item.discountedPrice || item.price,
         quantity: item.quantity,
