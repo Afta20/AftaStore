@@ -3,7 +3,7 @@ import ShopWithSidebar from "@/components/ShopWithSidebar";
 
 import { Metadata } from "next";
 export const metadata: Metadata = {
-  title: "Shop Page | NextCommerce Nextjs E-commerce template",
+  title: "Aftastore | Shop Page with Sidebar",
   description: "This is Shop Page for NextCommerce Template",
   // other metadata
 };
