@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- VALIDASI KRUSIAL DI BACKEND SEBELUM MEMBUAT PESANAN ---
+    console.log('[API /api/orders] Data diterima dari frontend:', JSON.stringify(cartItems, null, 2));
 
     // 1. Ambil semua ID produk dari keranjang
     const productIds = cartItems.map(item => item.id);
