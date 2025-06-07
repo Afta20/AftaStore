@@ -4,8 +4,6 @@ import MailSuccess from "@/components/MailSuccess";
 import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Aftastore | Mail Success Page",
-  description: "This is Mail Success Page for NextCommerce Template",
-  // other metadata
 };
 
 const MailSuccessPage = () => {

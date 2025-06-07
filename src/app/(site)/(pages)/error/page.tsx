@@ -4,8 +4,6 @@ import Error from "@/components/Error";
 import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Aftastore | Error Page",
-  description: "This is Error Page for NextCommerce Template",
-  // other metadata
 };
 
 const ErrorPage = () => {

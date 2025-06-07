@@ -4,8 +4,6 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Aftastore | Shop Details Page",
-  description: "This is Shop Details Page for NextCommerce Template",
-  // other metadata
 };
 
 const ShopDetailsPage = () => {
