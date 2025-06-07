@@ -51,7 +51,7 @@ const Checkout = () => {
   // State HANYA untuk input yang benar-benar akan kita kirim dari form utama Checkout ini
   const [shippingAddressMainInput, setShippingAddressMainInput] = useState(''); // Data dari textarea alamat
   const [customerNotesMainInput, setCustomerNotesMainInput] = useState('');   // Data dari textarea catatan
-
+  
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
@@ -86,6 +86,14 @@ const Checkout = () => {
       return;
     }
 console.log("Isi cartItems sebelum dikirim ke API:", JSON.stringify(cartItems, null, 2));
+const invalidCartItem = cartItems.find(item => typeof item.id !== 'string' || !item.id.startsWith('c'));
+
+    if (invalidCartItem) {
+      setCheckoutError(`Produk "${invalidCartItem.title}" memiliki ID yang tidak valid di keranjang Anda. Mohon hapus produk tersebut dan tambahkan kembali dari halaman toko.`);
+      // Scroll ke atas agar pengguna melihat pesan error
+      window.scrollTo(0, 0); 
+      return;
+    }
     setIsProcessing(true);
     setCheckoutError(null);
 
