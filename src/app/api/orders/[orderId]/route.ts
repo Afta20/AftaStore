@@ -3,21 +3,21 @@ import prisma from '@/lib/prisma';
 import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
 
-// Definisikan tipe untuk argumen kedua secara eksplisit
-interface RouteContext {
-  params: {
-    orderId: string;
-  };
-}
+// Perhatikan: Tidak ada 'interface RouteContext' lagi di sini.
 
-export async function GET(req: NextRequest, context: RouteContext) {
+export async function GET(
+  req: NextRequest,
+  // --- INI PERUBAHAN UTAMANYA ---
+  // Tipe untuk 'context' didefinisikan secara langsung (inline) di sini.
+  context: { params: { orderId: string } }
+) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   if (!token || !token.id) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  // Ambil orderId dari context.params, bukan langsung dari argumen
+  // Cara kita mengambil orderId tetap sama
   const { orderId } = context.params;
 
   if (!orderId) {
