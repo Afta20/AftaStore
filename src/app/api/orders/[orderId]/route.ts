@@ -1,14 +1,13 @@
+// File: src/app/api/orders/[orderId]/route.ts (SALIN SEMUA INI)
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
 
-// Perhatikan: Tidak ada 'interface RouteContext' lagi di sini.
-
 export async function GET(
   req: NextRequest,
-  // --- INI PERUBAHAN UTAMANYA ---
-  // Tipe untuk 'context' didefinisikan secara langsung (inline) di sini.
+  // Ini adalah struktur yang benar yang diterima oleh Vercel/Next.js
   context: { params: { orderId: string } }
 ) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -17,7 +16,6 @@ export async function GET(
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  // Cara kita mengambil orderId tetap sama
   const { orderId } = context.params;
 
   if (!orderId) {
