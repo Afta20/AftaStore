@@ -1,160 +1,111 @@
-// File: src/app/(site)/(pages)/orders/[orderId]/page.tsx
-"use client";
-
-import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
+import React from 'react';
 import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import Breadcrumb from '@/components/Common/Breadcrumb';
-import { FiArrowLeft, FiCalendar } from 'react-icons/fi';
+import prisma from '@/lib/prisma'; // Impor prisma client
+import { notFound } from 'next/navigation';
+import { FiCheckCircle, FiMapPin, FiCalendar } from 'react-icons/fi';
 
-interface OrderItem {
-  id: string;
-  quantity: number;
-  priceAtPurchase: number;
+// Helper untuk format tanggal dan mata uang
+const formatDate = (dateString: Date) => new Date(dateString).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
+const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-  productNameSnapshot: string;
-  productImageSnapshot: string | null;
-}
-interface OrderDetails {
-  id: string;
-  createdAt: string;
-  status: string;
-  totalAmount: number;
-  shippingAddress: string;
-  customerNotes?: string | null;
-  items: OrderItem[]; // Menggunakan tipe OrderItem yang baru
-}
+// Komponen halaman sekarang menjadi 'async' untuk bisa mengambil data
+const OrderConfirmationPage = async ({ params }: { params: { orderId: string } }) => {
+  const orderId = params.orderId;
 
-const UserOrderDetailsPage = () => {
-  const params = useParams();
-  const router = useRouter();
-  const orderId = params.orderId as string;
-  const { status: sessionStatus } = useSession({
-    required: true,
-    onUnauthenticated() {
-      router.push(`/signin?callbackUrl=/orders/${orderId}`);
-    },
-  });
+  // Mengambil data pesanan dari database di server
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: true, // Sertakan semua item yang terkait dengan pesanan ini
+    },
+  });
 
-  const [order, setOrder] = useState<OrderDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Jika pesanan tidak ditemukan, tampilkan halaman 404
+  if (!order) {
+    notFound();
+  }
 
-  const fetchOrderDetails = useCallback(async () => {
-    if (!orderId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`/api/orders/${orderId}`);
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || 'Failed to fetch order details.');
-      }
-      const data: OrderDetails = await response.json();
-      setOrder(data);
-    } catch (err: any) {
-      setError(err.message);
-      console.error("Fetch order details error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [orderId]);
+  // Lakukan kalkulasi biaya di sini
+  const subtotal = order.items.reduce((acc, item) => acc + (Number(item.priceAtPurchase) * item.quantity), 0);
+  const shippingFee = Number(order.totalAmount) - subtotal;
 
-  useEffect(() => {
-    if (sessionStatus === 'authenticated') {
-      fetchOrderDetails();
-    }
-  }, [sessionStatus, fetchOrderDetails]);
+  return (
+    <section className="py-16 md:py-20 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6 md:p-10 text-center">
+          
+          <FiCheckCircle className="text-green-500 text-6xl mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-gray-800">Pesanan Berhasil!</h1>
+          <p className="text-gray-500 mt-2">Terima kasih atas pesanan Anda. Berikut adalah ringkasannya:</p>
 
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
-  
-  const getStatusBadgeClass = (status: string): string => {
-    switch (status?.toUpperCase()) {
-      case 'PAID': case 'SHIPPED': case 'DELIVERED': case 'COMPLETED': return 'bg-green-100 text-green-800';
-      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
-      case 'CANCELLED': case 'FAILED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+          <div className="text-left border-t border-b my-8 py-6 space-y-4">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">Detail Pesanan</h2>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500 font-medium">Nomor Pesanan:</span>
+              <span className="text-gray-800 font-mono">{order.id}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500 font-medium">Tanggal Pesanan:</span>
+              <span className="text-gray-800">{formatDate(order.createdAt)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500 font-medium">Status Pesanan:</span>
+              <span className="font-semibold text-yellow-600">{order.status}</span>
+            </div>
+          </div>
 
-  // --- Bagian loading dan error handling (tidak ada perubahan) ---
-  if (loading || sessionStatus === 'loading') {
-    return <div className="p-8 text-center text-gray-600 min-h-[60vh] flex items-center justify-center">Loading your order details...</div>;
-  }
-  if (error) {
-    return <div className="p-8 text-center text-red-600 min-h-[60vh] flex items-center justify-center">Error: {error}</div>;
-  }
-  if (!order) {
-    return <div className="p-8 text-center text-gray-600 min-h-[60vh] flex items-center justify-center">Order not found.</div>;
-  }
+          <div className="text-left mb-8">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4 flex items-center gap-2"><FiMapPin /> Alamat Pengiriman</h2>
+            <p className="text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-md">{order.shippingAddress}</p>
+          </div>
 
-  return (
-    <>
-      <Breadcrumb title="Order Details" pages={["My Account", "My Orders", "Details"]} />
-      <section className="py-16 md:py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6 md:p-8">
-            {/* Header dan Summary (tidak ada perubahan signifikan) */}
-             {/* ... (kode header dan summary Anda bisa ditaruh di sini) ... */}
-             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-6 mb-6">
-               <div>
-                 <h1 className="text-2xl font-bold text-gray-800">Order #{order.id.substring(0, 8)}...</h1>
-                 <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
-                   <FiCalendar /> Placed on {formatDate(order.createdAt)}
-                 </p>
-               </div>
-               <div className="mt-4 sm:mt-0">
-                 <span className={`px-4 py-1.5 text-sm font-semibold rounded-full ${getStatusBadgeClass(order.status)}`}>
-                   {order.status}
-                 </span>
-               </div>
-             </div>
+          {/* ----- BAGIAN BARU: DAFTAR ITEM ----- */}
+          <div className="text-left">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">Ringkasan Item</h2>
+            <div className="space-y-4">
+              {order.items.map(item => (
+                <div key={item.id} className="flex items-center gap-4 border-b pb-4">
+                  <Image
+                    src={item.productImageSnapshot?.[0] ?? 'https://placehold.co/80x80/F3F4F6/9CA3AF?text=No+Img'}
+                    alt={item.productNameSnapshot}
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 rounded-md object-cover bg-gray-200"
+                  />
+                  <div className="flex-grow">
+                    <p className="font-medium text-gray-800">{item.productNameSnapshot}</p>
+                    <p className="text-sm text-gray-500">{item.quantity} x {formatCurrency(Number(item.priceAtPurchase))}</p>
+                  </div>
+                  <p className="font-semibold text-gray-900">
+                    {formatCurrency(item.quantity * Number(item.priceAtPurchase))}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* ----- BAGIAN BARU: RINCIAN BIAYA ----- */}
+          <div className="text-left border-t mt-8 pt-6">
+            <div className="space-y-2 text-md">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Subtotal</span>
+                <span className="text-gray-800">{formatCurrency(subtotal)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Biaya Pengiriman</span>
+                <span className="text-gray-800">{formatCurrency(shippingFee)}</span>
+              </div>
+              <div className="border-t pt-4 mt-4 flex justify-between font-bold text-xl">
+                <span className="text-gray-900">Total</span>
+                <span className="text-blue-600">{formatCurrency(Number(order.totalAmount))}</span>
+              </div>
+            </div>
+          </div>
 
-
-
-            {/* --- PERUBAHAN #2: LOGIKA MENAMPILKAN ITEM --- */}
-            <div className="mt-8 border-t pt-6">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">Items in this Order</h2>
-              <div className="space-y-4">
-                {order.items.map(item => (
-                  <div key={item.id} className="flex items-center gap-4 bg-gray-50 p-3 rounded-lg">
-                    <Image
-                      // Langsung gunakan data snapshot
-                      src={item.productImageSnapshot ?? 'https://placehold.co/100x100/F3F4F6/9CA3AF?text=No+Img'}
-                      alt={item.productNameSnapshot}
-                      width={80}
-                      height={80}
-                      className="w-20 h-20 rounded-md object-cover flex-shrink-0 bg-gray-200"
-                    />
-                    <div className="flex-grow">
-                      {/* Logika 'if (item.product)' tidak diperlukan lagi */}
-                      <p className="font-medium text-gray-800">{item.productNameSnapshot}</p>
-                      <p className="text-xs text-gray-500">Qty: {item.quantity} @ Rp {item.priceAtPurchase.toLocaleString('id-ID')}</p>
-                    </div>
-                    <p className="font-semibold text-gray-900">
-                      Rp {(item.priceAtPurchase * item.quantity).toLocaleString('id-ID')}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-10 text-center">
-              <Link
-                href="/orders" // Seharusnya ke halaman daftar order, bukan detail spesifik
-                className="inline-flex items-center gap-2 px-6 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 transition-colors"
-              >
-                <FiArrowLeft size={16} />
-                Back to Order History
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-    </>
-  );
+        </div>
+      </div>
+    </section>
+  );
 };
 
-export default UserOrderDetailsPage;
+export default OrderConfirmationPage;
