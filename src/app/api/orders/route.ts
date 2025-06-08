@@ -74,10 +74,7 @@ export async function POST(req: NextRequest) {
           status: 'PENDING',
           shippingAddress: shippingAddress || 'Alamat belum diisi',
           customerNotes: customerNotes || null,
-          
-          // ==========================================================
-          // ===             INILAH BAGIAN YANG DIPERBAIKI          ===
-          // ==========================================================
+
           items: {
             create: cartItems.map(item => {
               // Cari data produk yang relevan dari hasil query di atas
