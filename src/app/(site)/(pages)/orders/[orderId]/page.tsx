@@ -9,12 +9,11 @@ import { useSession } from 'next-auth/react';
 import Breadcrumb from '@/components/Common/Breadcrumb';
 import { FiArrowLeft, FiCalendar } from 'react-icons/fi';
 
-// --- PERUBAHAN #1: DEFINISI TIPE DATA DISESUAIKAN DENGAN SNAPSHOT ---
 interface OrderItem {
   id: string;
   quantity: number;
   priceAtPurchase: number;
-  // Kita tidak lagi menggunakan 'product', tapi langsung data snapshot
+
   productNameSnapshot: string;
   productImageSnapshot: string | null;
 }
@@ -112,7 +111,7 @@ const UserOrderDetailsPage = () => {
                  </span>
                </div>
              </div>
-             {/* ... (kode lainnya) ... */}
+
 
 
             {/* --- PERUBAHAN #2: LOGIKA MENAMPILKAN ITEM --- */}

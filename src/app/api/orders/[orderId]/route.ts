@@ -3,17 +3,22 @@ import prisma from '@/lib/prisma';
 import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { orderId: string } }
-) {
+// Definisikan tipe untuk argumen kedua secara eksplisit
+interface RouteContext {
+  params: {
+    orderId: string;
+  };
+}
+
+export async function GET(req: NextRequest, context: RouteContext) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   if (!token || !token.id) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  const { orderId } = params;
+  // Ambil orderId dari context.params, bukan langsung dari argumen
+  const { orderId } = context.params;
 
   if (!orderId) {
     return NextResponse.json({ message: 'Order ID tidak ditemukan.' }, { status: 400 });
@@ -23,12 +28,9 @@ export async function GET(
     const order = await prisma.order.findUnique({
       where: {
         id: orderId,
-        // Tambahan keamanan: pastikan hanya pemilik pesanan yang bisa melihat
         userId: token.id as string,
       },
       include: {
-        // Ini bagian pentingnya: kita mengambil semua item yang terkait
-        // yang sudah berisi data snapshot
         items: true,
       },
     });
