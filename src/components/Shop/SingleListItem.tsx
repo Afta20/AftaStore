@@ -22,12 +22,7 @@ const SingleListItem = ({ item }: { item: Product }) => {
 
   // add to cart
   const handleAddToCart = () => {
-    dispatch(
-      addItemToCart({
-        ...item,
-        quantity: 1,
-      })
-    );
+      dispatch(addItemToCart(item));
   };
 
   const handleItemToWishList = () => {
