@@ -19,7 +19,7 @@ export async function GET(
   const { orderId } = context.params;
 
   if (!orderId) {
-    return NextResponse.json({ message: 'Order ID tidak ditemukan.' }, { status: 400 });
+    return NextResponse.json({ message: 'Order ID tidak ditemukann.' }, { status: 400 });
   }
 
   try {
