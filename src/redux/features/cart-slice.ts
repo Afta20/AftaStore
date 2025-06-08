@@ -1,20 +1,14 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store";
+import { Product } from "@/types/product"; // <-- 1. Impor tipe Product standar
+
+// 2. Definisikan CartItem sebagai gabungan dari Product + quantity
+type CartItem = Product & {
+  quantity: number;
+};
 
 type InitialState = {
   items: CartItem[];
-};
-
-type CartItem = {
-  id: string;
-  title: string;
-  price: number;
-  discountedPrice: number;
-  quantity: number;
-  imgs?: {
-    thumbnails: string[];
-    previews: string[];
-  };
 };
 
 const initialState: InitialState = {
@@ -25,21 +19,17 @@ export const cart = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    addItemToCart: (state, action: PayloadAction<CartItem>) => {
-      const { id, title, price, quantity, discountedPrice, imgs } =
-        action.payload;
-      const existingItem = state.items.find((item) => item.id === id);
+    // 3. Perbaiki reducer untuk menangani data Product yang lengkap
+    addItemToCart: (state, action: PayloadAction<Product>) => {
+      const newItem = action.payload;
+      const existingItem = state.items.find((item) => item.id === newItem.id);
 
       if (existingItem) {
-        existingItem.quantity += quantity;
+        existingItem.quantity += 1;
       } else {
         state.items.push({
-          id,
-          title,
-          price,
-          quantity,
-          discountedPrice,
-          imgs,
+          ...newItem, // Kirim semua properti dari Product (...newItem)
+          quantity: 1, // Tambahkan quantity
         });
       }
     },
@@ -58,7 +48,6 @@ export const cart = createSlice({
         existingItem.quantity = quantity;
       }
     },
-
     removeAllItemsFromCart: (state) => {
       state.items = [];
     },
