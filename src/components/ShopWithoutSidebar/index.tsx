@@ -26,7 +26,7 @@ const ShopWithoutSidebar = async ({
       title: true,
       price: true,
       discountedPrice: true,
-      imgs: true,
+      imagePreviews: true,
       reviews: true,
       stock: true, // DATA STOK DIAMBIL DARI DATABASE
     },

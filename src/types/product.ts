@@ -4,8 +4,5 @@ export type Product = {
   price: number;
   discountedPrice: number;
   id: string;
-  imgs?: {
-    thumbnails: string[];
-    previews: string[];
+  imagePreviews: string[];
   };
-};
