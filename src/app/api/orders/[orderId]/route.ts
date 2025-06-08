@@ -1,4 +1,5 @@
-// File: src/app/api/orders/[orderId]/route.ts (SALIN SEMUA INI)
+// TAMBAHKAN PENANDA INI DI BARIS PALING ATAS
+console.log("----->>> INI VERSI KODE FINAL YANG BENAR - BUILD TEST <<<-----");
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -7,7 +8,6 @@ import type { NextRequest } from 'next/server';
 
 export async function GET(
   req: NextRequest,
-  // Ini adalah struktur yang benar yang diterima oleh Vercel/Next.js
   context: { params: { orderId: string } }
 ) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
