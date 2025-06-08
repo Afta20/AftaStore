@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         id: true,
         stock: true,
         title: true,
-        imageUrl: true,
+        imagePreviews: true,
       }
     });
 
@@ -68,12 +68,15 @@ export async function POST(req: NextRequest) {
           items: {
             create: cartItems.map(item => {
               const productData = productsInDb.find(p => p.id === item.id);
+              const mainImage = (productData?.imagePreviews && productData.imagePreviews.length > 0) 
+              ? productData.imagePreviews[0] 
+              : null;
               return {
                 productId: item.id,
                 quantity: item.quantity,
                 priceAtPurchase: item.price,
                   productNameSnapshot: productData?.title || item.title,
-                  productImageSnapshot: productData?.imageUrl || null,
+                  productImageSnapshot: mainImage,
               };
             }),
           },
