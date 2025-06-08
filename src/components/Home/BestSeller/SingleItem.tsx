@@ -20,14 +20,9 @@ const SingleItem = ({ item }: { item: Product }) => {
   };
 
   // add to cart
-  const handleAddToCart = () => {
-    dispatch(
-      addItemToCart({
-        ...item,
-        quantity: 1,
-      })
-    );
-  };
+const handleAddToCart = () => {
+    dispatch(addItemToCart(item));
+};
 
   const handleItemToWishList = () => {
     dispatch(
