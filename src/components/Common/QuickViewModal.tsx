@@ -31,12 +31,7 @@ const QuickViewModal = () => {
 
   // add to cart
   const handleAddToCart = () => {
-    dispatch(
-      addItemToCart({
-        ...product,
-        quantity,
-      })
-    );
+    dispatch(addItemToCart(product));
 
     closeModal();
   };
