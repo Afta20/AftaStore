@@ -119,7 +119,9 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   
   quantity  Int
-  priceAtPurchase Decimal // Harga produk saat dibeli (penting jika harga produk bisa berubah)
+  priceAtPurchase Decimal 
+  productNameSnapshot  String
+  productImageSnapshot String?
 
   @@index([orderId])
   @@index([productId])
