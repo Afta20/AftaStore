@@ -145,6 +145,6 @@ Beberapa fitur yang dapat ditambahkan di masa depan untuk meningkatkan proyek in
 
 ## 📞 Kontak
 
-Afta - [aftareezqi20@gmail.com](mailto:aftareezqi20@gmail.com)
+Afta - [Afreezap20@gmail.com](mailto:afreezap20@gmail.com)
 
 Link Proyek: [https://github.com/Afta20/AftaStore](https://github.com/Afta20/AftaStore)
