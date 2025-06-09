@@ -16,7 +16,6 @@ import { RootState, useAppSelector } from '@/redux/store'; // PASTIKAN PATH INI 
 import Shipping from "@/components/Checkout/Shipping";   // Sesuaikan path jika perlu
 import ShippingMethod from "@/components/Checkout/ShippingMethod"; // Sesuaikan path jika perlu
 import PaymentMethod from "@/components/Checkout/PaymentMethod"; // Sesuaikan path jika perlu
-import Coupon from "@/components/Checkout/Coupon";       // Sesuaikan path jika perlu
 
 interface CartItem {
   id: string;
@@ -267,7 +266,6 @@ const invalidCartItem = cartItems.find(item => typeof item.id !== 'string' || !i
                 </div>
                 
                 {/* Komponen ini dirender untuk tampilan, datanya belum diambil aktif */}
-                <Coupon />
                 <ShippingMethod /> 
                 <PaymentMethod />
 

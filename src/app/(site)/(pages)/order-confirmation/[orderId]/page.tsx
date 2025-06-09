@@ -130,7 +130,7 @@ const OrderConfirmationPage = () => {
             </div>
 
             <div className="bg-gray-50 p-4 sm:p-6 rounded-md mb-6">
-              <h2 className="text-lg font-semibold text-gray-700 mb-3">DOrder Summary</h2>
+              <h2 className="text-lg font-semibold text-gray-700 mb-3">Order Summary</h2>
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-gray-600">Order ID:</dt>
