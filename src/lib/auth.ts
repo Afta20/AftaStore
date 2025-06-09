@@ -1,33 +1,49 @@
-// File: src/lib/auth.js
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import prisma from "@/lib/prisma"; // Pastikan path ini benar
+import prisma from "@/lib/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from 'bcryptjs';
-// Jika kamu punya provider lain (Google, dll.) impor di sini juga
+import { type AuthOptions } from "next-auth";
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
-    CredentialsProvider.default({
+    // PERBAIKAN #1: Hapus .default
+    CredentialsProvider({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // ... logika authorize-mu yang sudah ada ...
-        // Pastikan me-return user object atau null
         if (!credentials?.email || !credentials.password) return null;
-        const user = await prisma.user.findUnique({ where: { email: credentials.email } });
+        
+        const user = await prisma.user.findUnique({ 
+          where: { email: credentials.email } 
+        });
+
         if (!user || !user.hashedPassword) return null;
-        const isValidPassword = await bcrypt.compare(credentials.password, user.hashedPassword);
+
+        const isValidPassword = await bcrypt.compare(
+          credentials.password,
+          user.hashedPassword
+        );
+
         if (!isValidPassword) return null;
-        return { id: user.id, name: user.name, email: user.email, image: user.image, role: user.role };
+
+        // Pastikan semua properti yang dibutuhkan oleh tipe User dan JWT ada di sini
+        return { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email, 
+          image: user.image, 
+          role: user.role, // Tipe User kita sudah punya 'role'
+        };
       },
     }),
     // Tambahkan provider lain di sini jika ada
   ],
   callbacks: {
+    // PERBAIKAN #2: TypeScript sekarang akan mengenali 'user.role' karena file next-auth.d.ts
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -35,6 +51,7 @@ export const authOptions = {
       }
       return token;
     },
+    // PERBAIKAN #3: TypeScript sekarang akan mengenali 'session.user.id' dan 'session.user.role'
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id;
@@ -51,5 +68,4 @@ export const authOptions = {
     strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET,
-  // debug: process.env.NODE_ENV === 'development',
 };
