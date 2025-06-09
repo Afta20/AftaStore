@@ -1,76 +1,35 @@
 import React from "react";
 
+// Helper untuk format mata uang
+const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+
 const OrderDetails = ({ orderItem }: any) => {
   return (
-    <>
-      <div className="items-center justify-between py-4.5 px-7.5 hidden md:flex ">
-        <div className="min-w-[113px]">
-          <p className="text-custom-sm text-dark">Order</p>
+    <div className="p-4 w-full">
+        <div className="mb-4">
+            <p className="font-medium">Order ID: <span className="text-red font-mono">#{orderItem.id.slice(-8)}</span></p>
+            <p className="text-sm text-gray-500">Date: {new Date(orderItem.createdAt).toLocaleDateString()}</p>
         </div>
-        <div className="min-w-[113px]">
-          <p className="text-custom-sm text-dark">Date</p>
+        <div className="mb-4">
+            <p className="font-medium">Shipping Address:</p>
+            <p className="text-sm text-gray-600">{orderItem.shippingAddress}</p>
         </div>
-
-        <div className="min-w-[113px]">
-          <p className="text-custom-sm text-dark">Status</p>
+        <div className="border-t pt-4">
+            <p className="font-medium mb-2">Items:</p>
+            <div className="space-y-2">
+                {/* Loop dan tampilkan setiap item */}
+                {orderItem.items.map((item: any) => (
+                    <div key={item.id} className="flex justify-between text-sm">
+                        <p className="text-gray-800">{item.productNameSnapshot} x{item.quantity}</p>
+                        <p className="text-gray-600">{formatCurrency(Number(item.priceAtPurchase) * item.quantity)}</p>
+                    </div>
+                ))}
+            </div>
         </div>
-
-        {/* <div className="min-w-[113px]">
-          <p className="text-custom-sm text-dark">Title</p>
-        </div> */}
-
-        <div className="min-w-[113px]">
-          <p className="text-custom-sm text-dark">Total</p>
+         <div className="border-t pt-2 mt-2 text-right">
+             <p className="font-bold">Total: {formatCurrency(Number(orderItem.totalAmount))}</p>
         </div>
-
-        {/* <div className="min-w-[113px]">
-          <p className="text-custom-sm text-dark">Action</p>
-        </div> */}
-      </div>
-
-      <div className="items-center justify-between border-t border-gray-3 py-5 px-7.5 hidden md:flex">
-        <div className="min-w-[111px]">
-          <p className="text-custom-sm text-red">
-            #{orderItem.orderId.slice(-8)}
-          </p>
-        </div>
-        <div className="min-w-[175px]">
-          <p className="text-custom-sm text-dark">
-            {orderItem.createdAt}
-          </p>
-        </div>
-
-        <div className="min-w-[128px]">
-          <p
-            className={`inline-block text-custom-sm  py-0.5 px-2.5 rounded-[30px] capitalize ${
-              orderItem.status === "delivered"
-                ? "text-green bg-green-light-6"
-                : orderItem.status === "on-hold"
-                ? "text-red bg-red-light-6"
-                : orderItem.status === "processing"
-                ? "text-yellow bg-yellow-light-4"
-                : "Unknown Status"
-            }`}
-          >
-            {orderItem.status}
-          </p>
-        </div>
-
-        {/* <div className="min-w-[213px]">
-          <p className="text-custom-sm text-dark">{orderItem.orderTitle}</p>
-        </div> */}
-
-        <div className="min-w-[113px]">
-          <p className="text-custom-sm text-dark">
-            {orderItem.total}
-          </p>
-        </div>
-      </div>
-      <div className="px-7.5 w-full">
-        <p className="font-bold">Shipping Address:</p>{" "}
-        <p>942 Aspen Road Encino, CA 91316</p>
-      </div>
-    </>
+    </div>
   );
 };
 
