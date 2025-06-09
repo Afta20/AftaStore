@@ -1,4 +1,4 @@
-// File: src/app/(site)/(pages)/orders/[orderId]/page.tsx (Versi Final)
+// File: src/app/(site)/(pages)/orders/[orderId]/page.tsx (Versi Final dengan Tipe Props yang Benar)
 
 import React from 'react';
 import Image from 'next/image';
@@ -8,25 +8,17 @@ import { notFound } from 'next/navigation';
 import Breadcrumb from '@/components/Common/Breadcrumb';
 import { FiArrowLeft, FiCalendar, FiMapPin } from 'react-icons/fi';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth'; // Mengimpor konfigurasi auth
+import { authOptions } from '@/lib/auth';
 
 // Helper untuk format
 const formatDate = (dateString: Date) => new Date(dateString).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
-// Tipe data props untuk halaman dinamis di App Router
-interface OrderDetailsPageProps {
-  params: {
-    orderId: string;
-  };
-}
-
-// Komponen halaman menjadi 'async' untuk bisa mengambil data
-const OrderDetailsPage = async ({ params }: OrderDetailsPageProps) => {
+// Tipe data props didefinisikan secara inline di dalam argumen fungsi
+const OrderDetailsPage = async ({ params }: { params: { orderId: string } }) => {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    // Idealnya, arahkan ke halaman login. Untuk kesederhanaan, kita tampilkan pesan.
     return <div className='container mx-auto text-center py-20'>Anda harus login untuk melihat halaman ini.</div>;
   }
 
@@ -35,7 +27,7 @@ const OrderDetailsPage = async ({ params }: OrderDetailsPageProps) => {
   const order = await prisma.order.findUnique({
     where: {
       id: orderId,
-      userId: session.user.id, // Keamanan: Pastikan hanya pemilik yang bisa melihat
+      userId: session.user.id,
     },
     include: {
       items: true,
