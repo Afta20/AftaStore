@@ -120,13 +120,13 @@ const UserOrderDetailsPage = () => {
               <div className="space-y-4">
                 {order.items.map(item => (
                   <div key={item.id} className="flex items-center gap-4 bg-gray-50 p-3 rounded-lg">
-                    <Image
-                      src={item.productImageSnapshot?.[0] ?? 'https://placehold.co/100x100/F3F4F6/9CA3AF?text=No+Img'}
-                      alt={item.productNameSnapshot}
-                      width={80}
-                      height={80}
-                      className="w-20 h-20 rounded-md object-cover flex-shrink-0 bg-gray-200"
-                    />
+                  <Image
+                          src={item.productImageSnapshot?.[0] ?? 'https://placehold.co/100x100/F3F4F6/9CA3AF?text=No+Img'}
+                          alt={item.productNameSnapshot}
+                          width={80}
+                          height={80}
+                          className="w-20 h-20 rounded-md object-cover flex-shrink-0 bg-gray-200"
+                        />
                     <div className="flex-grow">
                       <p className="font-medium text-gray-800">{item.productNameSnapshot}</p>
                       <p className="text-xs text-gray-500">Qty: {item.quantity} @ {formatCurrency(Number(item.priceAtPurchase))}</p>
