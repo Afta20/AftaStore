@@ -1,7 +1,7 @@
 # Afta-Store | E-Commerce Platform
 
 <div align="center">
-  <img src="https://drive.google.com/file/d/14wivLAlF066or4RbRUMyFAujgGGvJQ9a/view?usp=sharing" alt="Afta-Store Banner" width="600"/>
+  <img src="https://imgur.com/a/zJwnuUK" alt="Afta-Store Banner" width="600"/>
 </div>
 
 <div align="center">
