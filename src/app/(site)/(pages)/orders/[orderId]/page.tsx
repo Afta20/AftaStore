@@ -8,13 +8,12 @@ import { useSession } from 'next-auth/react';
 import Breadcrumb from '@/components/Common/Breadcrumb';
 import { FiArrowLeft, FiCalendar, FiMapPin } from 'react-icons/fi';
 
-// Definisikan tipe data sesuai snapshot
 interface OrderItem {
   id: string;
   quantity: number;
   priceAtPurchase: number;
   productNameSnapshot: string;
-  productImageSnapshot: string[] | null; // Sesuai tipe di Prisma
+  productImageSnapshot: string | null;
 }
 
 interface OrderDetails {
@@ -26,7 +25,6 @@ interface OrderDetails {
   items: OrderItem[];
 }
 
-// Helper format mata uang
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
 const UserOrderDetailsPage = () => {
@@ -49,7 +47,7 @@ const UserOrderDetailsPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/orders/${orderId}`); // Panggil API Route
+      const response = await fetch(`/api/orders/${orderId}`);
       if (!response.ok) {
         const errData = await response.json();
         throw new Error(errData.message || 'Gagal mengambil detail pesanan.');
@@ -90,6 +88,10 @@ const UserOrderDetailsPage = () => {
     return <div className="p-8 text-center text-gray-600 min-h-[60vh] flex items-center justify-center">Pesanan tidak ditemukan.</div>;
   }
 
+  // Kalkulasi biaya
+  const subtotal = order.items.reduce((acc, item) => acc + (Number(item.priceAtPurchase) * item.quantity), 0);
+  const shippingFee = Number(order.totalAmount) - subtotal;
+
   return (
     <>
       <Breadcrumb title="Order Details" pages={["My Account", "My Orders", "Details"]} />
@@ -120,13 +122,13 @@ const UserOrderDetailsPage = () => {
               <div className="space-y-4">
                 {order.items.map(item => (
                   <div key={item.id} className="flex items-center gap-4 bg-gray-50 p-3 rounded-lg">
-                  <Image
-                          src={item.productImageSnapshot?.[0] ?? 'https://placehold.co/100x100/F3F4F6/9CA3AF?text=No+Img'}
-                          alt={item.productNameSnapshot}
-                          width={80}
-                          height={80}
-                          className="w-20 h-20 rounded-md object-cover flex-shrink-0 bg-gray-200"
-                        />
+                    <Image
+                      src={item.productImageSnapshot ?? 'https://placehold.co/100x100/F3F4F6/9CA3AF?text=No+Img'}
+                      alt={item.productNameSnapshot}
+                      width={80}
+                      height={80}
+                      className="w-20 h-20 rounded-md object-cover flex-shrink-0 bg-gray-200"
+                    />
                     <div className="flex-grow">
                       <p className="font-medium text-gray-800">{item.productNameSnapshot}</p>
                       <p className="text-xs text-gray-500">Qty: {item.quantity} @ {formatCurrency(Number(item.priceAtPurchase))}</p>
@@ -136,6 +138,24 @@ const UserOrderDetailsPage = () => {
                     </p>
                   </div>
                 ))}
+              </div>
+            </div>
+            
+            <div className="mt-8 border-t pt-6">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">Rincian Biaya</h2>
+              <div className="space-y-2 text-md">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="text-gray-800">{formatCurrency(subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Biaya Pengiriman</span>
+                  <span className="text-gray-800">{formatCurrency(shippingFee)}</span>
+                </div>
+                <div className="border-t pt-4 mt-4 flex justify-between font-bold text-lg">
+                  <span className="text-gray-900">Total</span>
+                  <span className="text-blue-600">{formatCurrency(Number(order.totalAmount))}</span>
+                </div>
               </div>
             </div>
 
