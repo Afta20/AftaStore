@@ -4,7 +4,7 @@ import Breadcrumb from "../Common/Breadcrumb";
 import Image from "next/image";
 import AddressModal from "./AddressModal";
 import Orders from "../Orders";
-import { useSession, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react"; // Impor useSession dan signOut
 
 const MyAccount = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -12,11 +12,7 @@ const MyAccount = () => {
 
   // Mengambil data sesi pengguna yang sedang login
   const { data: session, status } = useSession({
-    required: true,
-    onUnauthenticated() {
-      // Jika pengguna tidak terotentikasi, bisa diarahkan ke halaman login
-      // router.push("/signin");
-    },
+    required: true, // Akan mengarahkan ke halaman login jika belum login
   });
 
   const openAddressModal = () => {
@@ -27,18 +23,24 @@ const MyAccount = () => {
     setAddressModal(false);
   };
 
-  // Menampilkan pesan loading saat data sesi sedang diambil
+  // Menampilkan pesan loading saat sesi sedang diverifikasi
   if (status === "loading") {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        Loading Account...
+        <p className="text-lg">Loading Your Account...</p>
       </div>
     );
   }
 
-  // Memecah nama untuk form (contoh sederhana)
-  const firstName = session?.user?.name?.split(" ")[0] || "";
-  const lastName = session?.user?.name?.split(" ").slice(1).join(" ") || "";
+  // Jika tidak ada sesi, tampilkan pesan (seharusnya jarang terjadi karena `required: true`)
+  if (!session) {
+    return <div>Please sign in to view your account.</div>;
+  }
+
+  // Memecah nama untuk ditampilkan di form
+  const nameParts = session.user?.name?.split(" ") || ["", ""];
+  const firstName = nameParts[0];
+  const lastName = nameParts.slice(1).join(" ");
 
   return (
     <>
@@ -52,9 +54,9 @@ const MyAccount = () => {
               <div className="flex xl:flex-col">
                 <div className="hidden lg:flex flex-wrap items-center gap-5 py-6 px-4 sm:px-7.5 xl:px-9 border-r xl:border-r-0 xl:border-b border-gray-3">
                   <div className="max-w-[64px] w-full h-16 rounded-full overflow-hidden">
-                    {/* DATA DINAMIS: Menggunakan gambar dari sesi */}
+                    {/* DATA DINAMIS: Gambar Profil dari Sesi */}
                     <Image
-                      src={session?.user?.image || "/images/users/default-avatar.png"}
+                      src={session.user?.image || "/images/users/default-avatar.png"}
                       alt="user"
                       width={64}
                       height={64}
@@ -62,49 +64,134 @@ const MyAccount = () => {
                   </div>
 
                   <div>
-                    {/* DATA DINAMIS: Menggunakan nama dari sesi */}
+                    {/* DATA DINAMIS: Nama dari Sesi */}
                     <p className="font-medium text-dark mb-0.5">
-                      {session?.user?.name}
+                      {session.user?.name || "User"}
                     </p>
-                    <p className="text-custom-xs">Afta-Store Member</p>
+                    <p className="text-custom-xs">Member Afta-Store</p>
                   </div>
                 </div>
 
                 <div className="p-4 sm:p-7.5 xl:p-9">
                   <div className="flex flex-wrap xl:flex-nowrap xl:flex-col gap-4">
-                    <button
-                      onClick={() => setActiveTab("dashboard")}
-                      className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white ${
-                        activeTab === "dashboard" ? "text-white bg-blue" : "text-dark-2 bg-gray-1"
-                      }`}
-                    >
-                      {/* ... SVG ... */}
-                      <svg className="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M5.91002 1.60413C5.08642 1.6041 4.39962 1.60408 3.85441 1.67738C3.27893 1.75475 2.75937 1.92495 2.34185 2.34246C1.92434 2.75998 1.75414 3.27954 1.67677 3.85502C1.60347 4.40023 1.60349 5.08701 1.60352 5.9106V6.00596C1.60349 6.82956 1.60347 7.51636 1.67677 8.06157C1.75414 8.63705 1.92434 9.15661 2.34185 9.57413C2.75937 9.99164 3.27893 10.1618 3.85441 10.2392C4.39962 10.3125 5.0864 10.3125 5.90999 10.3125H6.00535C6.82894 10.3125 7.51575 10.3125 8.06096 10.2392C8.63644 10.1618 9.156 9.99164 9.57352 9.57413C9.99103 9.15661 10.1612 8.63705 10.2386 8.06157C10.3119 7.51636 10.3119 6.82958 10.3119 6.00599V5.91063C10.3119 5.08704 10.3119 4.40023 10.2386 3.85502C10.1612 3.27954 9.99103 2.75998 9.57352 2.34246C9.156 1.92495 8.63644 1.75475 8.06096 1.67738C7.51575 1.60408 6.82897 1.6041 6.00538 1.60413H5.91002ZM3.31413 3.31474C3.43358 3.19528 3.61462 3.09699 4.03763 3.04012C4.48041 2.98059 5.07401 2.97913 5.95768 2.97913C6.84136 2.97913 7.43496 2.98059 7.87774 3.04012C8.30075 3.09699 8.48179 3.19528 8.60124 3.31474C8.7207 3.43419 8.81899 3.61523 8.87586 4.03824C8.93539 4.48102 8.93685 5.07462 8.93685 5.9583C8.93685 6.84197 8.93539 7.43557 8.87586 7.87835C8.81899 8.30136 8.7207 8.4824 8.60124 8.60186C8.48179 8.72131 8.30075 8.8196 7.87774 8.87647C7.43496 8.936 6.84136 8.93746 5.95768 8.93746C5.07401 8.93746 4.48041 8.936 4.03763 8.87647C3.61462 8.8196 3.43358 8.72131 3.31413 8.60186C3.19467 8.4824 3.09638 8.30136 3.03951 7.87835C2.97998 7.43557 2.97852 6.84197 2.97852 5.9583C2.97852 5.07462 2.97998 4.48102 3.03951 4.03824C3.09638 3.61523 3.19467 3.43419 3.31413 3.31474Z" fill=""></path><path fillRule="evenodd" clipRule="evenodd" d="M15.9934 11.6875C15.1697 11.6874 14.483 11.6874 13.9377 11.7607C13.3623 11.8381 12.8427 12.0083 12.4252 12.4258C12.0077 12.8433 11.8375 13.3629 11.7601 13.9384C11.6868 14.4836 11.6868 15.1704 11.6869 15.994V16.0893C11.6868 16.9129 11.6868 17.5997 11.7601 18.1449C11.8375 18.7204 12.0077 19.2399 12.4252 19.6575C12.8427 20.075 13.3623 20.2452 13.9377 20.3225C14.4829 20.3958 15.1697 20.3958 15.9933 20.3958H16.0887C16.9123 20.3958 17.5991 20.3958 18.1443 20.3225C18.7198 20.2452 19.2393 20.075 19.6569 19.6575C20.0744 19.2399 20.2446 18.7204 20.3219 18.1449C20.3952 17.5997 20.3952 16.913 20.3952 16.0894V15.994C20.3952 15.1704 20.3952 14.4836 20.3219 13.9384C20.2446 13.3629 20.0744 12.8433 19.6569 12.4258C19.2393 12.0083 18.7198 11.8381 18.1443 11.7607C17.5991 11.6874 16.9123 11.6874 16.0887 11.6875H15.9934ZM13.3975 13.3981C13.5169 13.2786 13.698 13.1803 14.121 13.1235C14.5637 13.0639 15.1573 13.0625 16.041 13.0625C16.9247 13.0625 17.5183 13.0639 17.9611 13.1235C18.3841 13.1803 18.5651 13.2786 18.6846 13.3981C18.804 13.5175 18.9023 13.6986 18.9592 14.1216C19.0187 14.5644 19.0202 15.158 19.0202 16.0416C19.0202 16.9253 19.0187 17.5189 18.9592 17.9617C18.9023 18.3847 18.804 18.5657 18.6846 18.6852C18.5651 18.8046 18.3841 18.9029 17.9611 18.9598C17.5183 19.0193 16.9247 19.0208 16.041 19.0208C15.1573 19.0208 14.5637 19.0193 14.121 18.9598C13.698 18.9029 13.5169 18.8046 13.3975 18.6852C13.278 18.5657 13.1797 18.3847 13.1228 17.9617C13.0633 17.5189 13.0619 16.9253 13.0619 16.0416C13.0619 15.158 13.0633 14.5644 13.1228 14.1216C13.1797 13.6986 13.278 13.5175 13.3975 13.3981Z" fill=""></path><path fillRule="evenodd" clipRule="evenodd" d="M5.91002 11.6875H6.00535C6.82896 11.6874 7.51574 11.6874 8.06096 11.7607C8.63644 11.8381 9.156 12.0083 9.57352 12.4258C9.99103 12.8433 10.1612 13.3629 10.2386 13.9384C10.3119 14.4836 10.3119 15.1703 10.3119 15.9939V16.0893C10.3119 16.9129 10.3119 17.5997 10.2386 18.1449C10.1612 18.7204 9.99103 19.2399 9.57352 19.6575C9.156 20.075 8.63644 20.2452 8.06096 20.3225C7.51575 20.3958 6.82899 20.3958 6.0054 20.3958H5.91002C5.08644 20.3958 4.39962 20.3958 3.85441 20.3225C3.27893 20.2452 2.75937 20.075 2.34185 19.6575C1.92434 19.2399 1.75414 18.7204 1.67677 18.1449C1.60347 17.5997 1.60349 16.9129 1.60352 16.0893V15.994C1.60349 15.1704 1.60347 14.4836 1.67677 13.9384C1.75414 13.3629 1.92434 12.8433 2.34185 12.4258C2.75937 12.0083 3.27893 11.8381 3.85441 11.7607C4.39963 11.6874 5.08641 11.6874 5.91002 11.6875ZM4.03763 13.1235C3.61462 13.1803 3.43358 13.2786 3.31413 13.3981C3.19467 13.5175 3.09638 13.6986 3.03951 14.1216C2.97998 14.5644 2.97852 15.158 2.97852 16.0416C2.97852 16.9253 2.97998 17.5189 3.03951 17.9617C3.09638 18.3847 3.19467 18.5657 3.31413 18.6852C3.43358 18.8046 3.61462 18.9029 4.03763 18.9598C4.48041 19.0193 5.07401 19.0208 5.95768 19.0208C6.84136 19.0208 7.43496 19.0193 7.87774 18.9598C8.30075 18.9029 8.48179 18.8046 8.60124 18.6852C8.7207 18.5657 8.81899 18.3847 8.87586 17.9617C8.93539 17.5189 8.93685 16.9253 8.93685 16.0416C8.93685 15.158 8.93539 14.5644 8.87586 14.1216C8.81899 13.6986 8.7207 13.5175 8.60124 13.3981C8.48179 13.2786 8.30075 13.1803 7.87774 13.1235C7.43496 13.0639 6.84136 13.0625 5.95768 13.0625C5.07401 13.0625 4.48041 13.0639 4.03763 13.1235Z" fill=""></path><path fillRule="evenodd" clipRule="evenodd" d="M15.9934 1.60413C15.1698 1.6041 14.483 1.60408 13.9377 1.67738C13.3623 1.75475 12.8427 1.92495 12.4252 2.34246C12.0077 2.75998 11.8375 3.27954 11.7601 3.85502C11.6868 4.40024 11.6868 5.08702 11.6869 5.91063V6.00596C11.6868 6.82957 11.6868 7.51635 11.7601 8.06157C11.8375 8.63705 12.0077 9.15661 12.4252 9.57413C12.8427 9.99164 13.3623 10.1618 13.9377 10.2392C14.483 10.3125 15.1697 10.3125 15.9933 10.3125H16.0887C16.9123 10.3125 17.5991 10.3125 18.1443 10.2392C18.7198 10.1618 19.2393 9.99164 19.6569 9.57413C20.0744 9.15661 20.2446 8.63705 20.3219 8.06157C20.3952 7.51636 20.3952 6.82958 20.3952 6.00599V5.91063C20.3952 5.08704 20.3952 4.40023 20.3219 3.85502C20.2446 3.27954 20.0744 2.75998 19.6569 2.34246C19.2393 1.92495 18.7198 1.75475 18.1443 1.67738C17.5991 1.60408 16.9123 1.6041 16.0887 1.60413H15.9934ZM13.3975 3.31474C13.5169 3.19528 13.698 3.09699 14.121 3.04012C14.5637 2.98059 15.1573 2.97913 16.041 2.97913C16.9247 2.97913 17.5183 2.98059 17.9611 3.04012C18.3841 3.09699 18.5651 3.19528 18.6846 3.31474C18.804 3.43419 18.9023 3.61523 18.9592 4.03824C19.0187 4.48102 19.0202 5.07462 19.0202 5.9583C19.0202 6.84197 19.0187 7.43557 18.9592 7.87835C18.9023 8.30136 18.804 8.4824 18.6846 8.60186C18.5651 8.72131 18.3841 8.8196 17.9611 8.87647C17.5183 8.936 16.9247 8.93746 16.041 8.93746C15.1573 8.93746 14.5637 8.936 14.121 8.87647C13.698 8.8196 13.5169 8.72131 13.3975 8.60186C13.278 8.4824 13.1797 8.30136 13.1228 7.87835C13.0633 7.43557 13.0619 6.84197 13.0619 5.9583C13.0619 5.07462 13.0633 4.48102 13.1228 4.03824C13.1797 3.61523 13.278 3.43419 13.3975 3.31474Z" fill=""></path></svg>
+                    <button onClick={() => setActiveTab("dashboard")} className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white ${ activeTab === "dashboard" ? "text-white bg-blue" : "text-dark-2 bg-gray-1" }`} >
+                      <svg className="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" >
+                        <path fillRule="evenodd" clipRule="evenodd" d="M5.91002 1.60413... (SVG code) ...Z" fill=""/>
+                      </svg>
                       Dashboard
                     </button>
-                    {/* ... (other buttons) ... */}
+                    <button onClick={() => setActiveTab("orders")} className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white ${ activeTab === "orders" ? "text-white bg-blue" : "text-dark-2 bg-gray-1" }`} >
+                      <svg className="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" >
+                        <path d="M8.0203 11.9167C8.0203 11.537... (SVG code) ...73071Z" fill=""/>
+                      </svg>
+                      Orders
+                    </button>
+                    <button onClick={() => setActiveTab("downloads")} className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white ${ activeTab === "downloads" ? "text-white bg-blue" : "text-dark-2 bg-gray-1" }`}>
+                      <svg className="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" >
+                        <path d="M11.5074 15.1306C11.3772 15.273... (SVG code) ...75Z" fill=""/>
+                      </svg>
+                      Downloads
+                    </button>
+                    <button onClick={() => setActiveTab("addresses")} className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white ${ activeTab === "addresses" ? "text-white bg-blue" : "text-dark-2 bg-gray-1" }`} >
+                      <svg className="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" >
+                        <path d="M8.25065 15.8125C7.87096 15.8125... (SVG code) ...4.12875Z" fill=""/>
+                      </svg>
+                      Addresses
+                    </button>
+                    <button onClick={() => setActiveTab("account-details")} className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white ${ activeTab === "account-details" ? "text-white bg-blue" : "text-dark-2 bg-gray-1" }`} >
+                      <svg className="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" >
+                        <path fillRule="evenodd" clipRule="evenodd" d="M10.9995 1.14581C8.59473... (SVG code) ...4.35364 16.0416Z" fill=""/>
+                      </svg>
+                      Account Details
+                    </button>
+                    <button onClick={() => signOut()} className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white text-dark-2 bg-gray-1`}>
+                      <svg className="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" >
+                        <path d="M13.7005 1.14581C12.4469... (SVG code) ...Z" fill=""/>
+                        <path d="M13.7507 10.3125C14.1303... (SVG code) ...77197L3.69247 10.3125H13.7507Z" fill=""/>
+                      </svg>
+                      Logout
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
+            {/* */}
 
             {/* */}
-            {/* */}
-            <div className={`... ${activeTab === "dashboard" ? "block" : "hidden"}`}>
-              {/* DATA DINAMIS: Menggunakan nama dari sesi */}
+            <div className={`xl:max-w-[770px] w-full bg-white rounded-xl shadow-1 py-9.5 px-4 sm:px-7.5 xl:px-10 ${ activeTab === "dashboard" ? "block" : "hidden" }`} >
+              {/* DATA DINAMIS: Nama di pesan selamat datang */}
               <p className="text-dark">
-                Hello {session?.user?.name} (not {session?.user?.name}?
-                <button onClick={() => signOut()} className="text-red ...">
+                Hello {session.user?.name} (not {session.user?.name}?
+                <button onClick={() => signOut()} className="text-red ease-out duration-200 hover:underline ml-1">
                   Log Out
                 </button>
                 )
               </p>
-              {/* ... */}
+              <p className="text-custom-sm mt-4">
+                From your account dashboard you can view your recent orders,
+                manage your shipping and billing addresses, and edit your
+                password and account details.
+              </p>
+            </div>
+            
+            <div className={`xl:max-w-[770px] w-full bg-white rounded-xl shadow-1 ${ activeTab === "orders" ? "block" : "hidden" }`}>
+              <Orders />
+            </div>
+            
+            <div className={`xl:max-w-[770px] w-full bg-white rounded-xl shadow-1 py-9.5 px-4 sm:px-7.5 xl:px-10 ${ activeTab === "downloads" ? "block" : "hidden" }`}>
+              <p>You don&apos;t have any download</p>
+            </div>
+            
+            <div className={`flex-col sm:flex-row gap-7.5 ${ activeTab === "addresses" ? "flex" : "hidden" }`}>
+              <div className="xl:max-w-[370px] w-full bg-white shadow-1 rounded-xl">
+                <div className="flex items-center justify-between py-5 px-4 sm:pl-7.5 sm:pr-6 border-b border-gray-3">
+                  <p className="font-medium text-xl text-dark">Shipping Address</p>
+                  <button className="text-dark ease-out duration-200 hover:text-blue" onClick={openAddressModal}>
+                    {/* ... SVG Edit ... */}
+                  </button>
+                </div>
+                <div className="p-4 sm:p-7.5">
+                  <div className="flex flex-col gap-4">
+                     {/* DATA DINAMIS: Info pengguna di kartu alamat */}
+                    <p className="flex items-center gap-2.5 text-custom-sm">Name: {session.user?.name}</p>
+                    <p className="flex items-center gap-2.5 text-custom-sm">Email: {session.user?.email}</p>
+                    <p className="flex items-center gap-2.5 text-custom-sm">Phone: (Data belum ada)</p>
+                    <p className="flex gap-2.5 text-custom-sm">Address: (Data belum ada)</p>
+                  </div>
+                </div>
+              </div>
+              {/* ... Kartu Billing Address ... */}
+            </div>
+            
+            <div className={`xl:max-w-[770px] w-full ${ activeTab === "account-details" ? "block" : "hidden" }`}>
+              <form>
+                <div className="bg-white shadow-1 rounded-xl p-4 sm:p-8.5">
+                  <div className="flex flex-col lg:flex-row gap-5 sm:gap-8 mb-5">
+                    <div className="w-full">
+                      <label htmlFor="firstName" className="block mb-2.5">First Name <span className="text-red">*</span></label>
+                      <input type="text" name="firstName" id="firstName" placeholder="Jhon" defaultValue={firstName} className="..."/>
+                    </div>
+                    <div className="w-full">
+                      <label htmlFor="lastName" className="block mb-2.5">Last Name <span className="text-red">*</span></label>
+                      <input type="text" name="lastName" id="lastName" placeholder="Deo" defaultValue={lastName} className="..."/>
+                    </div>
+                  </div>
+                  {/* ... Sisa Form ... */}
+                  <button type="submit" className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark">
+                    Save Changes
+                  </button>
+                </div>
+                <div className="bg-white shadow-1 rounded-xl p-4 sm:p-8.5 mt-9">
+                  <p className="font-medium text-xl sm:text-2xl text-dark mb-7">Password Change</p>
+                  {/* ... Form ganti password ... */}
+                </div>
+              </form>
             </div>
             {/* */}
           </div>
         </div>
       </section>
+
       <AddressModal isOpen={addressModal} closeModal={closeAddressModal} />
     </>
   );
