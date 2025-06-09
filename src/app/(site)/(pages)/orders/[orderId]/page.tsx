@@ -1,3 +1,5 @@
+// File: src/app/(site)/(pages)/orders/[orderId]/page.tsx (Versi Final)
+
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -6,23 +8,29 @@ import { notFound } from 'next/navigation';
 import Breadcrumb from '@/components/Common/Breadcrumb';
 import { FiArrowLeft, FiCalendar, FiMapPin } from 'react-icons/fi';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from "@/lib/auth";
+import { authOptions } from '@/lib/auth'; // Mengimpor konfigurasi auth
 
 // Helper untuk format
 const formatDate = (dateString: Date) => new Date(dateString).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
 const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
+// Tipe data props untuk halaman dinamis di App Router
+interface OrderDetailsPageProps {
+  params: {
+    orderId: string;
+  };
+}
+
 // Komponen halaman menjadi 'async' untuk bisa mengambil data
-const OrderDetailsPage = async ({ params }: { params: { orderId: string } }) => {
+const OrderDetailsPage = async ({ params }: OrderDetailsPageProps) => {
   const session = await getServerSession(authOptions);
 
-  // Jika tidak ada sesi, seharusnya tidak bisa mengakses halaman ini (sesuaikan dengan logika Anda)
   if (!session?.user?.id) {
-    // Redirect atau tampilkan pesan error
-    return <div>Anda harus login untuk melihat halaman ini.</div>;
+    // Idealnya, arahkan ke halaman login. Untuk kesederhanaan, kita tampilkan pesan.
+    return <div className='container mx-auto text-center py-20'>Anda harus login untuk melihat halaman ini.</div>;
   }
 
-  const orderId = params.orderId;
+  const { orderId } = params;
 
   const order = await prisma.order.findUnique({
     where: {
@@ -53,7 +61,6 @@ const OrderDetailsPage = async ({ params }: { params: { orderId: string } }) => 
       <section className="py-16 md:py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6 md:p-8">
-            {/* Header Pesanan */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-6 mb-6">
               <div>
                 <h1 className="text-2xl font-bold text-gray-800">Order #{order.id.substring(0, 8)}...</h1>
@@ -68,13 +75,11 @@ const OrderDetailsPage = async ({ params }: { params: { orderId: string } }) => 
               </div>
             </div>
 
-            {/* Alamat Pengiriman */}
             <div className="mb-8">
               <h2 className="text-lg font-semibold text-gray-700 mb-2 flex items-center gap-2"><FiMapPin /> Shipping Address</h2>
               <p className="text-gray-600 leading-relaxed">{order.shippingAddress}</p>
             </div>
 
-            {/* Daftar Item */}
             <div className="mt-8 border-t pt-6">
               <h2 className="text-lg font-semibold text-gray-700 mb-4">Items in this Order</h2>
               <div className="space-y-4">
@@ -101,7 +106,7 @@ const OrderDetailsPage = async ({ params }: { params: { orderId: string } }) => 
 
             <div className="mt-10 text-center">
               <Link
-                href="/orders" // Link kembali ke daftar riwayat pesanan
+                href="/orders"
                 className="inline-flex items-center gap-2 px-6 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 transition-colors"
               >
                 <FiArrowLeft size={16} />
