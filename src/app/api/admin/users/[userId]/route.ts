@@ -1,6 +1,6 @@
-// File: src/app/api/admin/users/[userId]/route.ts 
+// File: src/app/api/admin/users/[userId]/route.ts (Versi Final Menggunakan req.nextUrl)
 
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server'; // Impor NextRequest
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -8,18 +8,20 @@ import { authOptions } from '@/lib/auth';
 /**
  * GET handler untuk mengambil data satu pengguna berdasarkan ID.
  */
-export async function GET(
-  req: Request,
-  // PERBAIKAN: Gunakan 'context' dengan tipe inline untuk menerima parameter
-  context: { params: { userId: string } } 
-) {
+export async function GET(req: NextRequest) { // Hanya menggunakan req sebagai parameter
   const session = await getServerSession(authOptions);
   if (session?.user?.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }
 
   try {
-    const { userId } = context.params; // Ambil userId dari context.params
+    // Ambil segmen terakhir dari URL sebagai userId
+    const userId = req.nextUrl.pathname.split('/').pop();
+
+    if (!userId) {
+        return NextResponse.json({ message: 'User ID is missing from URL' }, { status: 400 });
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -44,20 +46,20 @@ export async function GET(
 /**
  * PUT handler untuk memperbarui detail pengguna.
  */
-export async function PUT(
-  req: Request,
-  // PERBAIKAN: Gunakan 'context' juga di sini
-  context: { params: { userId: string } }
-) {
+export async function PUT(req: NextRequest) { // Hanya menggunakan req sebagai parameter
   const session = await getServerSession(authOptions);
   if (session?.user?.role !== 'ADMIN') {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }
 
   try {
-    const { userId } = context.params; // Ambil userId dari context.params
+    // Ambil segmen terakhir dari URL sebagai userId
+    const userId = req.nextUrl.pathname.split('/').pop();
     const { name, email, role } = await req.json();
 
+    if (!userId) {
+        return NextResponse.json({ message: 'User ID is missing from URL' }, { status: 400 });
+    }
     if (!name || !email || !role) {
       return NextResponse.json({ message: 'Name, email, and role are required' }, { status: 400 });
     }
