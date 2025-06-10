@@ -1,7 +1,7 @@
 # Afta-Store | E-Commerce Platform
 
 <div align="center">
-  <img src="https://imgur.com/a/zJwnuUK" alt="Afta-Store Banner" width="600"/>
+  <img src="./docs/Afta-Store.png" alt="Afta-Store Banner" width="600"/>
 </div>
 
 <div align="center">
@@ -45,6 +45,10 @@
 Afta-Store adalah aplikasi web e-commerce fungsional yang mensimulasikan toko ritel online. Proyek ini mencakup seluruh alur belanja pengguna, mulai dari melihat produk, menambahkan ke keranjang dan wishlist, hingga proses checkout dan melihat riwayat pesanan yang akurat berkat implementasi *data snapshotting*.
 
 Proyek ini dirancang untuk menunjukkan penerapan praktik terbaik dalam pengembangan web modern, termasuk arsitektur Server & Client Component, otentikasi yang aman, manajemen state yang efisien, dan interaksi database yang *type-safe*.
+
+Untuk Login Dashboard admin disini saya melakukan pengaturan User dan password berupa 
+AkuAdmin@gmail.com
+AkuAdmin2004
 
 ## ✨ Fitur Utama
 

@@ -123,24 +123,22 @@ const ManageUsersPage = () => {
   const handleDeleteUser = async (userId: string) => {
     if (window.confirm(`Anda yakin ingin menghapus pengguna dengan ID: ${userId}? Tindakan ini tidak dapat diurungkan.`)) {
       console.log("Attempting to delete user:", userId);
-      // TODO: Implementasikan pemanggilan API DELETE ke /api/admin/users/${userId}
-      // Contoh:
-      // setLoading(true);
-      // try {
-      //   const response = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
-      //   if (!response.ok) {
-      //     const errorData = await response.json().catch(() => ({}));
-      //     throw new Error(errorData.message || 'Gagal menghapus pengguna.');
-      //   }
-      //   alert('Pengguna berhasil dihapus.');
-      //   fetchUsers(); // Refresh daftar pengguna
-      // } catch (err: any) {
-      //   setError(err.message || 'Gagal menghapus pengguna.');
-      //   console.error("Delete user error:", err);
-      //   alert(`Error: ${err.message || 'Gagal menghapus pengguna.'}`);
-      // } finally {
-      //   setLoading(false);
-      // }
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Gagal menghapus pengguna.');
+        }
+        alert('Pengguna berhasil dihapus.');
+        fetchUsers(); // Refresh daftar pengguna
+      } catch (err: any) {
+        setError(err.message || 'Gagal menghapus pengguna.');
+        console.error("Delete user error:", err);
+        alert(`Error: ${err.message || 'Gagal menghapus pengguna.'}`);
+      } finally {
+        setLoading(false);
+      }
       alert(`Fungsi hapus untuk pengguna ${userId} belum diimplementasikan di backend.`);
     }
   };
