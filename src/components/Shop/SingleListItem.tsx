@@ -25,15 +25,9 @@ const SingleListItem = ({ item }: { item: Product }) => {
       dispatch(addItemToCart(item));
   };
 
-  const handleItemToWishList = () => {
-    dispatch(
-      addItemToWishlist({
-        ...item,
-        status: "available",
-        quantity: 1,
-      })
-    );
-  };
+const handleItemToWishList = () => {
+    dispatch(addItemToWishlist(item));
+};
 
   return (
     <div className="group rounded-lg bg-white shadow-1">

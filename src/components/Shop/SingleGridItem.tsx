@@ -25,16 +25,9 @@ const handleAddToCart = () => {
     dispatch(addItemToCart(item));
 };
 
-  const handleItemToWishList = () => {
-    dispatch(
-      addItemToWishlist({
-        ...item,
-        status: "available",
-        quantity: 1,
-      })
-    );
-  };
-
+const handleItemToWishList = () => {
+    dispatch(addItemToWishlist(item));
+};
   return (
     <div className="group">
       <div className="relative overflow-hidden flex items-center justify-center rounded-lg bg-white shadow-1 min-h-[270px] mb-4">
