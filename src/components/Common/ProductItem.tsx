@@ -26,15 +26,9 @@ const handleAddToCart = () => {
     dispatch(addItemToCart(item));
 };
 
-  const handleItemToWishList = () => {
-    dispatch(
-      addItemToWishlist({
-        ...item,
-        status: "available",
-        quantity: 1,
-      })
-    );
-  };
+const handleItemToWishList = () => {
+    dispatch(addItemToWishlist(item));
+};
 
   const handleProductDetails = () => {
     dispatch(updateproductDetails({ ...item }));
