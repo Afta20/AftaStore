@@ -270,7 +270,7 @@ const ManageUsersPage = () => {
                     <td className="px-6 py-4 text-gray-600">{formatDate(user.createdAt)}</td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
                       {/* Placeholder: Ganti dengan Link ke halaman edit pengguna jika ada */}
-                      <Link href={`/admin/dashboard/users/edit/${user.id}`} className="font-medium text-blue-600 hover:text-blue-800 hover:underline mr-4 transition-colors">
+                      <Link href={`/admin/dashboard/users/${user.id}`} className="font-medium text-blue-600 hover:text-blue-800 hover:underline mr-4 transition-colors">
                         <FiEdit3 className="inline -mt-1 mr-1" />Edit
                       </Link>
                       <button
