@@ -1,20 +1,11 @@
+// File: src/redux/features/wishlist-slice.ts (SUDAH DIPERBAIKI)
+
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Product } from "@/types/product"; // <-- 1. Impor tipe Product standar kita
 
+// State sekarang menggunakan tipe Product langsung
 type InitialState = {
-  items: WishListItem[];
-};
-
-type WishListItem = {
-  id: string;
-  title: string;
-  price: number;
-  discountedPrice: number;
-  quantity: number;
-  status?: string;
-  imgs?: {
-    thumbnails: string[];
-    previews: string[];
-  };
+  items: Product[];
 };
 
 const initialState: InitialState = {
@@ -25,30 +16,20 @@ export const wishlist = createSlice({
   name: "wishlist",
   initialState,
   reducers: {
-    addItemToWishlist: (state, action: PayloadAction<WishListItem>) => {
-      const { id, title, price, quantity, imgs, discountedPrice, status } =
-        action.payload;
-      const existingItem = state.items.find((item) => item.id === id);
-
-      if (existingItem) {
-        existingItem.quantity += quantity;
-      } else {
-        state.items.push({
-          id,
-          title,
-          price,
-          quantity,
-          imgs,
-          discountedPrice,
-          status,
-        });
+    // 2. Action sekarang menerima payload dengan tipe Product
+    addItemToWishlist: (state, action: PayloadAction<Product>) => {
+      const newItem = action.payload;
+      
+      // Mencegah item yang sama ditambahkan berulang kali
+      const existingItem = state.items.find((item) => item.id === newItem.id);
+      if (!existingItem) {
+        state.items.push(newItem); // Menambahkan seluruh objek Product ke state
       }
     },
     removeItemFromWishlist: (state, action: PayloadAction<string>) => {
       const itemId = action.payload;
       state.items = state.items.filter((item) => item.id !== itemId);
     },
-
     removeAllItemsFromWishlist: (state) => {
       state.items = [];
     },
