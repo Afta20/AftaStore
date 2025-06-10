@@ -10,7 +10,7 @@ import { authOptions } from '@/lib/auth';
  */
 export async function GET(
   req: Request,
-  // PERBAIKAN: Gunakan 'context' untuk menerima parameter
+  // PERBAIKAN: Gunakan 'context' dengan tipe inline untuk menerima parameter
   context: { params: { userId: string } } 
 ) {
   const session = await getServerSession(authOptions);
@@ -36,6 +36,7 @@ export async function GET(
 
     return NextResponse.json(user);
   } catch (error) {
+    console.error("Failed to fetch user:", error);
     return NextResponse.json({ message: 'Failed to fetch user', error: (error as Error).message }, { status: 500 });
   }
 }
@@ -72,6 +73,7 @@ export async function PUT(
 
     return NextResponse.json(updatedUser);
   } catch (error) {
+    console.error("Failed to update user:", error);
     return NextResponse.json({ message: 'Failed to update user', error: (error as Error).message }, { status: 500 });
   }
 }
