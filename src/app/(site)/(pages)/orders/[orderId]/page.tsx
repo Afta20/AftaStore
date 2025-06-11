@@ -142,14 +142,14 @@ const UserOrderDetailsPage = () => {
             </div>
             
             <div className="mt-8 border-t pt-6">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">Rincian Biaya</h2>
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">Order Summary</h2>
               <div className="space-y-2 text-md">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="text-gray-800">{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Biaya Pengiriman</span>
+                  <span className="text-gray-600">Shipping</span>
                   <span className="text-gray-800">{formatCurrency(shippingFee)}</span>
                 </div>
                 <div className="border-t pt-4 mt-4 flex justify-between font-bold text-lg">
