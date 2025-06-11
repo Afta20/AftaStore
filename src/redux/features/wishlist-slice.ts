@@ -1,9 +1,8 @@
-// File: src/redux/features/wishlist-slice.ts (SUDAH DIPERBAIKI)
+// File: src/redux/features/wishlist-slice.ts 
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Product } from "@/types/product"; // <-- 1. Impor tipe Product standar kita
 
-// State sekarang menggunakan tipe Product langsung
 type InitialState = {
   items: Product[];
 };
@@ -16,7 +15,7 @@ export const wishlist = createSlice({
   name: "wishlist",
   initialState,
   reducers: {
-    // 2. Action sekarang menerima payload dengan tipe Product
+    // 2. Action menerima payload dengan tipe Product
     addItemToWishlist: (state, action: PayloadAction<Product>) => {
       const newItem = action.payload;
       

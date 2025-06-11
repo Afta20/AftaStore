@@ -77,7 +77,7 @@ const OrderConfirmationPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <p className="text-lg text-gray-600">Memuat detail pesanan Anda...</p>
+        <p className="text-lg text-gray-600">Loading your order details...</p>
       </div>
     );
   }
