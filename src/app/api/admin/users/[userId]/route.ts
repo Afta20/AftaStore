@@ -1,4 +1,4 @@
-// File: src/app/api/admin/users/[userId]/route.ts 
+// File: src/app/api/admin/users/[userId]/route.ts (Solusi Final dengan Workaround Build)
 
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -16,28 +16,24 @@ const userUpdateSchema = z.object({
 
 /**
  * GET: Mengambil detail satu pengguna berdasarkan ID.
+ * Menggunakan req.nextUrl untuk mengambil ID, menghindari argumen 'context'.
  */
-// Tipe untuk argumen kedua didefinisikan secara 'inline'
-export async function GET(
-  req: NextRequest,
-  context: { params: { userId: string } }
-) {
-  const { userId } = context.params; // Ambil userId dari context.params
-
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (session?.user?.role !== 'ADMIN') {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
+    // CARA ALTERNATIF: Ambil ID dari segmen terakhir URL
+    const userId = req.nextUrl.pathname.split('/').pop();
+    if (!userId) {
+      return NextResponse.json({ message: 'User ID not found in URL' }, { status: 400 });
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-      },
+      select: { id: true, name: true, email: true, role: true },
     });
 
     if (!user) {
@@ -55,18 +51,18 @@ export async function GET(
 
 /**
  * PUT: Memperbarui data seorang pengguna berdasarkan ID.
+ * Menggunakan req.nextUrl untuk mengambil ID, menghindari argumen 'context'.
  */
-// Tipe untuk argumen kedua didefinisikan secara 'inline'
-export async function PUT(
-  req: NextRequest,
-  context: { params: { userId: string } }
-) {
-  const { userId } = context.params;
-
+export async function PUT(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (session?.user?.role !== 'ADMIN') {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
+    const userId = req.nextUrl.pathname.split('/').pop();
+    if (!userId) {
+      return NextResponse.json({ message: 'User ID not found in URL' }, { status: 400 });
     }
 
     const body = await req.json();
@@ -92,18 +88,18 @@ export async function PUT(
 
 /**
  * DELETE: Menghapus seorang pengguna berdasarkan ID.
+ * Menggunakan req.nextUrl untuk mengambil ID, menghindari argumen 'context'.
  */
-// Tipe untuk argumen kedua didefinisikan secara 'inline'
-export async function DELETE(
-  req: NextRequest,
-  context: { params: { userId: string } }
-) {
-  const { userId } = context.params;
-
+export async function DELETE(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (session?.user?.role !== 'ADMIN') {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
+    const userId = req.nextUrl.pathname.split('/').pop();
+    if (!userId) {
+      return NextResponse.json({ message: 'User ID not found in URL' }, { status: 400 });
     }
 
     if (session.user.id === userId) {
