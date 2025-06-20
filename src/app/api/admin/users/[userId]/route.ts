@@ -1,17 +1,10 @@
-// File: src/app/api/admin/users/[userId]/route.ts (Versi Final Gabungan)
+// File: src/app/api/admin/users/[userId]/route.ts 
 
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth'; // Sesuaikan path ini jika perlu
+import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
-
-// Tipe untuk context yang diterima oleh route handler dari Next.js
-interface RouteContext {
-  params: {
-    userId: string;
-  };
-}
 
 // Skema validasi untuk data update pengguna menggunakan Zod
 const userUpdateSchema = z.object({
@@ -24,19 +17,21 @@ const userUpdateSchema = z.object({
 /**
  * GET: Mengambil detail satu pengguna berdasarkan ID.
  */
-export async function GET(req: NextRequest, context: RouteContext) {
-  const { params } = context; // Menggunakan context untuk mendapatkan params (cara resmi)
+// Tipe untuk argumen kedua didefinisikan secara 'inline'
+export async function GET(
+  req: NextRequest,
+  context: { params: { userId: string } }
+) {
+  const { userId } = context.params; // Ambil userId dari context.params
 
   try {
     const session = await getServerSession(authOptions);
-    // Menggunakan 'ADMIN' (huruf besar) sesuai kode lama Anda
     if (session?.user?.role !== 'ADMIN') {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: params.userId },
-      // Menggunakan 'select' untuk efisiensi (praktik baik dari kode Anda)
+      where: { id: userId },
       select: {
         id: true,
         name: true,
@@ -61,8 +56,12 @@ export async function GET(req: NextRequest, context: RouteContext) {
 /**
  * PUT: Memperbarui data seorang pengguna berdasarkan ID.
  */
-export async function PUT(req: NextRequest, context: RouteContext) {
-  const { params } = context;
+// Tipe untuk argumen kedua didefinisikan secara 'inline'
+export async function PUT(
+  req: NextRequest,
+  context: { params: { userId: string } }
+) {
+  const { userId } = context.params;
 
   try {
     const session = await getServerSession(authOptions);
@@ -71,15 +70,13 @@ export async function PUT(req: NextRequest, context: RouteContext) {
     }
 
     const body = await req.json();
-    // Validasi data yang masuk dengan Zod (lebih aman dari cek manual)
     const { name, email, role } = userUpdateSchema.parse(body);
 
     const updatedUser = await prisma.user.update({
-      where: { id: params.userId },
+      where: { id: userId },
       data: { name, email, role },
     });
     
-    // Jangan kirim password hash kembali ke frontend
     const { password, ...userWithoutPassword } = updatedUser;
     return NextResponse.json(userWithoutPassword, { status: 200 });
 
@@ -96,8 +93,12 @@ export async function PUT(req: NextRequest, context: RouteContext) {
 /**
  * DELETE: Menghapus seorang pengguna berdasarkan ID.
  */
-export async function DELETE(req: NextRequest, context: RouteContext) {
-  const { params } = context;
+// Tipe untuk argumen kedua didefinisikan secara 'inline'
+export async function DELETE(
+  req: NextRequest,
+  context: { params: { userId: string } }
+) {
+  const { userId } = context.params;
 
   try {
     const session = await getServerSession(authOptions);
@@ -105,12 +106,12 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
-    if (session.user.id === params.userId) {
+    if (session.user.id === userId) {
       return NextResponse.json({ message: 'Admin cannot delete their own account.' }, { status: 400 });
     }
 
     await prisma.user.delete({
-      where: { id: params.userId },
+      where: { id: userId },
     });
     
     return NextResponse.json({ message: 'User deleted successfully.' }, { status: 200 });
