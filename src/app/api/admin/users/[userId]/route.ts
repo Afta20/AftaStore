@@ -1,47 +1,58 @@
-// File: src/app/api/admin/users/[userId]/route.ts
+// File: src/app/api/admin/users/[userId]/route.ts (Versi Final Gabungan)
 
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '@/lib/auth'; // Sesuaikan path ini jika perlu
 import { z } from 'zod';
 
-// Skema validasi untuk data yang masuk saat update (PUT)
+// Tipe untuk context yang diterima oleh route handler dari Next.js
+interface RouteContext {
+  params: {
+    userId: string;
+  };
+}
+
+// Skema validasi untuk data update pengguna menggunakan Zod
 const userUpdateSchema = z.object({
-  name: z.string().min(3, { message: 'Name must be at least 3 characters long.' }),
-  email: z.string().email({ message: 'Invalid email address.' }),
-  role: z.enum(['ADMIN', 'USER', 'EDITOR'], { message: "Role must be one of: 'ADMIN', 'USER', 'EDITOR'." }),
+  name: z.string().min(3, 'Name must be at least 3 characters long.'),
+  email: z.string().email('Invalid email address.'),
+  role: z.enum(['ADMIN', 'USER', 'EDITOR']),
 });
 
 
 /**
  * GET: Mengambil detail satu pengguna berdasarkan ID.
  */
-export async function GET(
-  req: Request,
-  { params }: { params: { userId: string } }
-) {
-  // Keamanan: Hanya admin yang bisa melihat detail pengguna
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'admin') {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
+export async function GET(req: NextRequest, context: RouteContext) {
+  const { params } = context; // Menggunakan context untuk mendapatkan params (cara resmi)
 
   try {
+    const session = await getServerSession(authOptions);
+    // Menggunakan 'ADMIN' (huruf besar) sesuai kode lama Anda
+    if (session?.user?.role !== 'ADMIN') {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: params.userId },
+      // Menggunakan 'select' untuk efisiensi (praktik baik dari kode Anda)
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
     });
 
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    // Jangan kirim password hash ke frontend
-    const { password, ...userWithoutPassword } = user;
-    return NextResponse.json(userWithoutPassword);
+    return NextResponse.json(user);
 
   } catch (error) {
-    console.error(`[GET_USER_ERROR]`, error);
+    console.error("[GET_USER_ERROR]", error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -50,41 +61,33 @@ export async function GET(
 /**
  * PUT: Memperbarui data seorang pengguna berdasarkan ID.
  */
-export async function PUT(
-  req: Request,
-  { params }: { params: { userId: string } }
-) {
-  // Keamanan: Hanya admin yang bisa mengedit pengguna
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'admin') {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
+export async function PUT(req: NextRequest, context: RouteContext) {
+  const { params } = context;
 
   try {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== 'ADMIN') {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await req.json();
-    const { name, email, role } = userUpdateSchema.parse(body); // Validasi input
+    // Validasi data yang masuk dengan Zod (lebih aman dari cek manual)
+    const { name, email, role } = userUpdateSchema.parse(body);
 
     const updatedUser = await prisma.user.update({
       where: { id: params.userId },
-      data: {
-        name,
-        email,
-        role,
-      },
+      data: { name, email, role },
     });
     
-    // Jangan kirim password hash ke frontend
+    // Jangan kirim password hash kembali ke frontend
     const { password, ...userWithoutPassword } = updatedUser;
     return NextResponse.json(userWithoutPassword, { status: 200 });
 
   } catch (error) {
-    // Tangani error validasi dari Zod
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: error.issues[0].message }, { status: 400 });
     }
-    
-    // Tangani error umum lainnya
-    console.error(`[PUT_USER_ERROR]`, error);
+    console.error("[PUT_USER_ERROR]", error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -92,30 +95,31 @@ export async function PUT(
 
 /**
  * DELETE: Menghapus seorang pengguna berdasarkan ID.
- * (Fungsi dari langkah sebelumnya, disertakan untuk kelengkapan)
  */
-export async function DELETE(
-  req: Request,
-  { params }: { params: { userId: string } }
-) {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'admin') {
-    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-  }
-
-  if (session.user.id === params.userId) {
-    return NextResponse.json({ message: 'Admin cannot delete their own account.' }, { status: 400 });
-  }
+export async function DELETE(req: NextRequest, context: RouteContext) {
+  const { params } = context;
 
   try {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== 'ADMIN') {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
+    if (session.user.id === params.userId) {
+      return NextResponse.json({ message: 'Admin cannot delete their own account.' }, { status: 400 });
+    }
+
     await prisma.user.delete({
       where: { id: params.userId },
     });
+    
     return NextResponse.json({ message: 'User deleted successfully.' }, { status: 200 });
+
   } catch (error: any) {
     if (error.code === 'P2025') {
       return NextResponse.json({ message: 'Error: User not found.' }, { status: 404 });
     }
+    console.error("[DELETE_USER_ERROR]", error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
