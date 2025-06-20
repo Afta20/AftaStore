@@ -5,10 +5,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { FiUsers, FiArrowLeft, FiTrash2, FiSearch } from 'react-icons/fi';
 
-/**
- * @interface User
- * Mendefinisikan struktur objek untuk data pengguna.
- */
 interface User {
   id: string;
   name: string | null;
@@ -18,10 +14,6 @@ interface User {
   image?: string | null;
 }
 
-/**
- * Komponen `ManageUsersPage` adalah halaman untuk menampilkan, mencari, dan mengelola
- * daftar pengguna dalam dashboard admin.
- */
 const ManageUsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,7 +86,7 @@ const ManageUsersPage = () => {
           throw new Error(errorData.message || 'Gagal menghapus pengguna.');
         }
         alert('Pengguna berhasil dihapus.');
-        fetchUsers();
+        fetchUsers(); // Refresh daftar pengguna
       } catch (err: any) {
         setError(err.message || 'Gagal menghapus pengguna.');
         console.error("Delete user error:", err);
@@ -102,7 +94,7 @@ const ManageUsersPage = () => {
       } finally {
         setLoading(false);
       }
-      alert(`Fungsi hapus untuk pengguna ${userId} belum diimplementasikan di backend.`);
+      // === BARIS ALERT PLACEHOLDER SUDAH DIHAPUS DARI SINI ===
     }
   };
 
@@ -145,38 +137,13 @@ const ManageUsersPage = () => {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          {/* === PERUBAHAN DI SINI === */}
           <Link
             href="/admin/dashboard"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              padding: '0.5rem 1rem',
-              backgroundColor: '#4B5563', // bg-gray-600
-              color: 'white',
-              borderRadius: '0.375rem',
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              textDecoration: 'none',
-              boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-              transition: 'background-color 0.2s ease-out',
-              width: '100%', // Meniru 'w-full'
-            }}
-            // Trik untuk meniru 'sm:w-auto'
-            onLoad={(e) => {
-                if (window.innerWidth >= 640) { // 640px adalah breakpoint 'sm'
-                    e.currentTarget.style.width = 'auto';
-                }
-            }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#374151'} // hover:bg-gray-700
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4B5563'}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm font-medium shadow-sm"
           >
             <FiArrowLeft size={18} />
             Back to Dashboard
           </Link>
-          {/* === AKHIR PERUBAHAN === */}
         </div>
       </div>
 
