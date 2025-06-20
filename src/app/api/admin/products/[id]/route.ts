@@ -1,169 +1,138 @@
-// File: src/app/api/admin/products/[id]/route.ts
+// File: src/app/api/admin/products/[Id]/route.ts
+
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getToken } from 'next-auth/jwt';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { z } from 'zod'; // Menggunakan Zod untuk validasi
 
-interface ApiOrderItem {
-  id: string;
-  productId: string;
-  title: string;
-  quantity: number;
-  priceAtPurchase: number;
-}
+// Skema validasi untuk data update produk
+const productUpdateSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters."),
+  price: z.number().positive("Price must be a positive number."),
+  discountedPrice: z.number().positive().nullable().optional(),
+  stock: z.number().int().min(0, "Stock must be a non-negative number."),
+  imagePreviews: z.array(z.string().url()).optional(),
+  description: z.string().optional().nullable(),
+  categoryId: z.string().nullable().optional(),
+  status: z.enum(['ACTIVE', 'ARCHIVED']).optional(),
+});
 
-interface ApiUser {
-  name?: string | null;
-}
 
-interface ApiOrderResponse { // Nama interface ini mungkin lebih cocok jika terkait order, tapi kita biarkan dulu
-  id: string;
-  createdAt: string;
-  totalAmount: number;
-  shippingAddress: string;
-  customerNotes?: string | null;
-  status: string;
-  items: ApiOrderItem[];
-  user?: ApiUser;
-}
-
-// --- GET Handler: Mengambil detail satu produk ---
+/**
+ * GET: Mengambil detail satu produk untuk halaman edit.
+ */
 export async function GET(
-  request: NextRequest,
-  context: { params?: { [key: string]: string | string[] | undefined } } // <-- PERUBAHAN SIGNATURE
+  req: NextRequest,
+  context: { params: { productId: string } }
 ) {
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-  if (!token || token.role !== 'admin') {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
-
-  const idParam = context.params?.id; // Ambil 'id', bukan 'orderId'
-
-  if (typeof idParam !== 'string') {
-    return NextResponse.json({ message: 'Product ID harus berupa string tunggal di path parameter' }, { status: 400 });
-  }
-  const productId: string = idParam;
-
   try {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== 'admin') {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
+    const { productId } = context.params;
     const product = await prisma.product.findUnique({
       where: { id: productId },
-      include: {
-        category: true,
-      },
+      include: { category: true }, // Sertakan data kategori
     });
 
     if (!product) {
       return NextResponse.json({ message: 'Product not found' }, { status: 404 });
     }
-
+    
+    // Konversi Decimal ke number sebelum mengirim
     const responseProduct = {
-      ...product,
-      price: Number(product.price),
-      discountedPrice: product.discountedPrice ? Number(product.discountedPrice) : null,
+        ...product,
+        price: Number(product.price),
+        discountedPrice: product.discountedPrice ? Number(product.discountedPrice) : null,
     };
 
-    return NextResponse.json(responseProduct, { status: 200 });
+    return NextResponse.json(responseProduct);
   } catch (error) {
-    console.error(`Failed to fetch product ${productId}:`, error);
-    return NextResponse.json({ message: `Failed to fetch product: ${productId}` }, { status: 500 });
+    console.error(`[GET_PRODUCT_ERROR]`, error);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-// --- PUT Handler: Memperbarui produk yang ada ---
+
+/**
+ * PUT: Memperbarui detail produk setelah diedit.
+ */
 export async function PUT(
-  request: NextRequest,
-  context: { params?: { [key: string]: string | string[] | undefined } } // <-- PERUBAHAN SIGNATURE
+  req: NextRequest,
+  context: { params: { productId: string } }
 ) {
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-  if (!token || token.role !== 'admin') {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
-
-  const idParam = context.params?.id; // Ambil 'id'
-
-  if (typeof idParam !== 'string') {
-    return NextResponse.json({ message: 'Product ID harus berupa string tunggal di path parameter' }, { status: 400 });
-  }
-  const productId: string = idParam;
-
   try {
-    const body = await request.json();
-    const {
-      title, price, stock, imagePreviews, description, categoryId,
-    } = body;
-
-    if (!title || price == null || stock == null) {
-      return NextResponse.json({ message: 'Title, Price, and Stock are required' }, { status: 400 });
-    }
-    const priceNumber = parseFloat(price);
-    if (isNaN(priceNumber) || priceNumber < 0) {
-        return NextResponse.json({ message: 'Price must be a valid non-negative number.' }, { status: 400 });
-    }
-    const stockNumber = parseInt(stock, 10);
-    if (isNaN(stockNumber) || stockNumber < 0) {
-        return NextResponse.json({ message: 'Stock must be a valid non-negative number.' }, { status: 400 });
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== 'admin') {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
-    const updateData: any = {
-      title,
-      price: priceNumber,
-      stock: stockNumber,
-      imagePreviews: imagePreviews || [],
-      description: description || null,
-    };
+    const { productId } = context.params;
+    const body = await req.json();
 
-    if (categoryId) {
-      updateData.category = { connect: { id: categoryId } };
-    } else {
-      updateData.category = { disconnect: true };
+    // Validasi data yang masuk menggunakan Zod
+    const validatedData = productUpdateSchema.partial().parse(body);
+
+    const updatedProduct = await prisma.product.update({
+      where: { id: productId },
+      data: {
+        ...validatedData,
+        // Logika khusus untuk menghubungkan/memutuskan kategori
+        ...(validatedData.categoryId !== undefined && {
+            category: validatedData.categoryId 
+                ? { connect: { id: validatedData.categoryId } } 
+                : { disconnect: true }
+        })
+      },
+    });
+
+    return NextResponse.json(updatedProduct, { status: 200 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ message: `Invalid input: ${error.errors[0].message}` }, { status: 400 });
+    }
+    console.error(`[PUT_PRODUCT_ERROR]`, error);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+
+/**
+ * PATCH: Mengubah status produk (misalnya dari ACTIVE ke ARCHIVED).
+ * Ini adalah implementasi dari "soft delete".
+ */
+export async function PATCH(
+  req: NextRequest,
+  context: { params: { productId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== 'admin') {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
+    const { productId } = context.params;
+    const body = await req.json();
+    const { status } = body;
+
+    if (!status || (status !== 'ACTIVE' && status !== 'ARCHIVED')) {
+      return NextResponse.json({ message: 'Invalid status provided. Must be ACTIVE or ARCHIVED.' }, { status: 400 });
     }
 
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
-      data: updateData,
+      data: { status: status },
     });
 
     return NextResponse.json(updatedProduct, { status: 200 });
   } catch (error: any) {
-    console.error(`Failed to update product ${productId}:`, error);
+    console.error(`[PATCH_PRODUCT_STATUS_ERROR]`, error);
     if (error.code === 'P2025') {
-        return NextResponse.json({ message: 'Product not found for update.' }, { status: 404 });
+      return NextResponse.json({ message: 'Error: Product not found.' }, { status: 404 });
     }
-    return NextResponse.json({ message: `Failed to update product: ${productId}`, error: error.message }, { status: 500 });
-  }
-}
-
-// --- DELETE Handler: Menghapus produk ---
-export async function DELETE(
-  request: NextRequest,
-  context: { params?: { [key: string]: string | string[] | undefined } } // <-- PERUBAHAN SIGNATURE
-) {
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-  if (!token || token.role !== 'admin') {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
-
-  const idParam = context.params?.id; // Ambil 'id'
-
-  if (typeof idParam !== 'string') {
-    return NextResponse.json({ message: 'Product ID harus berupa string tunggal di path parameter' }, { status: 400 });
-  }
-  const productId: string = idParam;
-
-  try {
-    await prisma.product.update({
-      where: { id: productId },
-      data: { status: 'ARCHIVED' },
-    });
-
-    return NextResponse.json({ message: 'Product deleted successfully' }, { status: 200 });
-  } catch (error: any) {
-    console.error(`Failed to delete product ${productId}:`, error);
-    if (error.code === 'P2025') {
-        return NextResponse.json({ message: 'Product not found for deletion.' }, { status: 404 });
-    }
-    if (error.code === 'P2003') {
-        return NextResponse.json({ message: 'Cannot delete product. It is still referenced in existing orders.' }, { status: 409 });
-    }
-    return NextResponse.json({ message: `Failed to delete product: ${productId}`, error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }

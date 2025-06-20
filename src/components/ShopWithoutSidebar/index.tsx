@@ -1,35 +1,43 @@
+// File: src/components/ShopWithoutSidebar/index.tsx (atau di mana pun komponen ini berada)
+
 import React from "react";
-import Breadcrumb from "../Common/Breadcrumb";
-import ShopControls from "./ShopControls";
+import Breadcrumb from "../Common/Breadcrumb"; // Sesuaikan path jika perlu
+import ShopControls from "./ShopControls";    // Sesuaikan path jika perlu
 import prisma from "@/lib/prisma";
 import { Product } from "@/types/product";
 
-
+// Definisikan tipe untuk props yang diterima
 interface ComponentProps {
   query?: string;
   category?: string;
 }
 
 const ShopWithoutSidebarComponent = async ({ query, category }: ComponentProps) => {
-  // 3. Gunakan prop 'query' dan 'category' yang sudah jadi string
   const lowerCaseQuery = query?.toLowerCase() || "";
   const categoryId = category;
 
-  const whereClause: any = {};
+  // === PERBAIKAN UTAMA DI SINI ===
+  const whereClause: any = {
+    // Tambahkan kondisi WAJIB: produk harus berstatus ACTIVE
+    status: 'ACTIVE',
+  };
 
+  // Tambahkan filter lain jika ada
   if (lowerCaseQuery) {
-    whereClause.title = { // Ingat, cek nama field ini vs schema.prisma
+    whereClause.title = {
       contains: lowerCaseQuery,
       mode: "insensitive",
     };
   }
 
   if (categoryId && !isNaN(parseInt(categoryId)) && parseInt(categoryId) !== 0) {
-    whereClause.categoryId = parseInt(categoryId); // Cek juga nama field ini
+    whereClause.categoryId = parseInt(categoryId);
   }
+  // === AKHIR PERBAIKAN ===
+
 
   const productsFromDB = await prisma.product.findMany({
-    where: whereClause,
+    where: whereClause, // Gunakan klausa where yang sudah diperbaiki
     select: {
       id: true,
       title: true,
@@ -38,9 +46,16 @@ const ShopWithoutSidebarComponent = async ({ query, category }: ComponentProps) 
       imagePreviews: true,
       reviews: true,
       stock: true,
+      status: true, // Sertakan status untuk debugging jika perlu
+      category: { // Sertakan nama kategori
+        select: {
+            name: true,
+        }
+      }
     },
   });
 
+  // Ubah produk menjadi objek 'polos' sebelum dikirim ke Client Component.
   const serializableProducts = productsFromDB.map(product => ({
     ...product,
     price: product.price.toNumber(),
