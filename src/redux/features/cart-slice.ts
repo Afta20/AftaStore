@@ -1,17 +1,19 @@
+// File: src/redux/features/cart-slice.ts
+
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store";
-import { Product } from "@/types/product"; // <-- 1. Impor tipe Product standar
+import { Product } from "@/types/product";
 
-// 2. Definisikan CartItem sebagai gabungan dari Product + quantity
-type CartItem = Product & {
+// Tipe untuk item di dalam keranjang, menambahkan properti quantity
+export interface CartItem extends Product {
   quantity: number;
-};
+}
 
-type InitialState = {
+interface CartState {
   items: CartItem[];
-};
+}
 
-const initialState: InitialState = {
+const initialState: CartState = {
   items: [],
 };
 
@@ -19,7 +21,7 @@ export const cart = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    // 3. Perbaiki reducer untuk menangani data Product yang lengkap
+    // Reducer Anda sudah benar, tidak perlu diubah
     addItemToCart: (state, action: PayloadAction<Product>) => {
       const newItem = action.payload;
       const existingItem = state.items.find((item) => item.id === newItem.id);
@@ -28,8 +30,8 @@ export const cart = createSlice({
         existingItem.quantity += 1;
       } else {
         state.items.push({
-          ...newItem, // Kirim semua properti dari Product (...newItem)
-          quantity: 1, // Tambahkan quantity
+          ...newItem,
+          quantity: 1,
         });
       }
     },
@@ -56,9 +58,12 @@ export const cart = createSlice({
 
 export const selectCartItems = (state: RootState) => state.cartReducer.items;
 
+// === PERBAIKAN UTAMA DI SINI ===
 export const selectTotalPrice = createSelector([selectCartItems], (items) => {
   return items.reduce((total, item) => {
-    return total + item.discountedPrice * item.quantity;
+    // Gunakan discountedPrice jika ada, jika tidak, gunakan price biasa.
+    const priceToUse = item.discountedPrice ?? item.price;
+    return total + priceToUse * item.quantity;
   }, 0);
 });
 
