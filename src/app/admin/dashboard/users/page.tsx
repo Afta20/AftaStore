@@ -3,7 +3,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { FiUsers, FiArrowLeft, FiEdit3, FiTrash2, FiSearch } from 'react-icons/fi';
+// === PERUBAHAN DI SINI: FiEdit3 dihapus dari import ===
+import { FiUsers, FiArrowLeft, FiTrash2, FiSearch } from 'react-icons/fi';
 
 /**
  * @interface User
@@ -193,39 +194,13 @@ const ManageUsersPage = () => {
               Add New User
             </Link>
           */}
-          {/* === PERUBAHAN DI SINI === */}
           <Link
             href="/admin/dashboard"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              padding: '0.5rem 1rem',
-              backgroundColor: '#4B5563', // bg-gray-600
-              color: 'white',
-              borderRadius: '0.375rem',
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              textDecoration: 'none',
-              boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-              transition: 'background-color 0.2s ease-out',
-              width: '100%', // w-full
-            }}
-            // Di layar yang lebih besar, style di bawah akan menimpa 'width'
-            // Ini adalah cara meniru 'sm:w-auto' dengan JavaScript
-            onLoad={(e) => {
-                if (window.innerWidth >= 640) { // 640px adalah breakpoint 'sm' di Tailwind
-                    e.currentTarget.style.width = 'auto';
-                }
-            }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#374151'} // hover:bg-gray-700
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4B5563'}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm font-medium shadow-sm"
           >
             <FiArrowLeft size={18} />
             Back to Dashboard
           </Link>
-          {/* === AKHIR PERUBAHAN === */}
         </div>
       </div>
 
@@ -295,10 +270,7 @@ const ManageUsersPage = () => {
                     </td>
                     <td className="px-6 py-4 text-gray-600">{formatDate(user.createdAt)}</td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
-                      {/* Placeholder: Ganti dengan Link ke halaman edit pengguna jika ada */}
-                      <Link href={`/admin/dashboard/users/${user.id}`} className="font-medium text-blue-600 hover:text-blue-800 hover:underline mr-4 transition-colors">
-                        <FiEdit3 className="inline -mt-1 mr-1" />Edit
-                      </Link>
+                      {/* === PERUBAHAN DI SINI: Link Edit dihapus === */}
                       <button
                         onClick={() => handleDeleteUser(user.id)}
                         className="font-medium text-red-600 hover:text-red-800 hover:underline transition-colors"
