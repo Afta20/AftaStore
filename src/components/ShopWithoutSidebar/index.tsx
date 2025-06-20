@@ -2,38 +2,34 @@ import React from "react";
 import Breadcrumb from "../Common/Breadcrumb";
 import ShopControls from "./ShopControls";
 import prisma from "@/lib/prisma";
+import { Product } from "@/types/product";
 
-// Definisikan tipe untuk searchParams agar lebih jelas
-interface ShopPageProps {
-  searchParams?: {
-    query?: string;
-    category?: string;
-  };
+
+interface ComponentProps {
+  query?: string;
+  category?: string;
 }
 
-const ShopWithoutSidebar = async ({ searchParams }: ShopPageProps) => {
-  const query = searchParams?.query?.toLowerCase() || "";
-  const categoryId = searchParams?.category;
+const ShopWithoutSidebarComponent = async ({ query, category }: ComponentProps) => {
+  // 3. Gunakan prop 'query' dan 'category' yang sudah jadi string
+  const lowerCaseQuery = query?.toLowerCase() || "";
+  const categoryId = category;
 
-  // Bangun klausa 'where' untuk Prisma secara dinamis
   const whereClause: any = {};
 
-  // Tambahkan filter berdasarkan judul jika ada query
-  if (query) {
-    whereClause.title = {
-      contains: query,
+  if (lowerCaseQuery) {
+    whereClause.title = { // Ingat, cek nama field ini vs schema.prisma
+      contains: lowerCaseQuery,
       mode: "insensitive",
     };
   }
 
-  // Tambahkan filter berdasarkan kategori jika ada categoryId yang valid
-  // Pastikan nama field 'categoryId' sesuai dengan skema Prisma Anda
   if (categoryId && !isNaN(parseInt(categoryId)) && parseInt(categoryId) !== 0) {
-    whereClause.categoryId = parseInt(categoryId);
+    whereClause.categoryId = parseInt(categoryId); // Cek juga nama field ini
   }
 
-  const products = await prisma.product.findMany({
-    where: whereClause, // Gunakan klausa where yang dinamis
+  const productsFromDB = await prisma.product.findMany({
+    where: whereClause,
     select: {
       id: true,
       title: true,
@@ -45,21 +41,20 @@ const ShopWithoutSidebar = async ({ searchParams }: ShopPageProps) => {
     },
   });
 
-  // Fungsi untuk membuat pesan hasil pencarian yang lebih dinamis
+  const serializableProducts = productsFromDB.map(product => ({
+    ...product,
+    price: product.price.toNumber(),
+    discountedPrice: product.discountedPrice ? product.discountedPrice.toNumber() : null,
+  }));
+
   const getResultMessage = () => {
-    if (!query && !categoryId) return null;
-    
-    let message = `Showing <strong>${products.length}</strong> result${products.length !== 1 ? 's' : ''}`;
+    if (!query && !category) return null;
+    let message = `Showing <strong>${serializableProducts.length}</strong> result${serializableProducts.length !== 1 ? 's' : ''}`;
     const forParts = [];
     if (query) forParts.push(`&quot;${query}&quot;`);
-    
-    // Anda bisa menambahkan logika untuk menampilkan nama kategori jika perlu
-    // const categoryName = await prisma.category.findUnique...
-    
     if (forParts.length > 0) {
       message += ` for ${forParts.join(' ')}`;
     }
-    
     return <p className="text-sm text-gray-600 mb-4" dangerouslySetInnerHTML={{ __html: message }} />;
   };
 
@@ -74,7 +69,7 @@ const ShopWithoutSidebar = async ({ searchParams }: ShopPageProps) => {
           <div className="flex gap-7.5">
             <div className="w-full">
               {getResultMessage()}
-              <ShopControls products={products} />
+              <ShopControls products={serializableProducts as Product[]} />
             </div>
           </div>
         </div>
@@ -83,4 +78,4 @@ const ShopWithoutSidebar = async ({ searchParams }: ShopPageProps) => {
   );
 };
 
-export default ShopWithoutSidebar;
+export default ShopWithoutSidebarComponent;
