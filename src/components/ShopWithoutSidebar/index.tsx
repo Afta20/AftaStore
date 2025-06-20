@@ -16,7 +16,7 @@ const ShopWithoutSidebar = async ({
     where: {
       // Filter produk berdasarkan query pencarian
       title: {
-        contains: query,
+        startsWith: query,
         mode: "insensitive", // tidak peduli huruf besar/kecil
       },
     },
