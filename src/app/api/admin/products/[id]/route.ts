@@ -1,10 +1,16 @@
-// File: src/app/api/admin/products/[Id]/route.ts
+// File: src/app/api/admin/products/[productId]/route.ts
 
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { z } from 'zod'; // Menggunakan Zod untuk validasi
+import { z } from 'zod';
+
+// Helper function untuk mengambil productId dari request URL
+const getProductIdFromRequest = (req: NextRequest): string | null => {
+    const segments = req.nextUrl.pathname.split('/');
+    return segments.pop() || null;
+}
 
 // Skema validasi untuk data update produk
 const productUpdateSchema = z.object({
@@ -22,27 +28,27 @@ const productUpdateSchema = z.object({
 /**
  * GET: Mengambil detail satu produk untuk halaman edit.
  */
-export async function GET(
-  req: NextRequest,
-  context: { params: { productId: string } }
-) {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (session?.user?.role !== 'admin') {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
-    const { productId } = context.params;
+    const productId = getProductIdFromRequest(req);
+    if (!productId) {
+        return NextResponse.json({ message: 'Product ID is missing from URL.' }, { status: 400 });
+    }
+
     const product = await prisma.product.findUnique({
       where: { id: productId },
-      include: { category: true }, // Sertakan data kategori
+      include: { category: true },
     });
 
     if (!product) {
       return NextResponse.json({ message: 'Product not found' }, { status: 404 });
     }
     
-    // Konversi Decimal ke number sebelum mengirim
     const responseProduct = {
         ...product,
         price: Number(product.price),
@@ -60,27 +66,25 @@ export async function GET(
 /**
  * PUT: Memperbarui detail produk setelah diedit.
  */
-export async function PUT(
-  req: NextRequest,
-  context: { params: { productId: string } }
-) {
+export async function PUT(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (session?.user?.role !== 'admin') {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
-    const { productId } = context.params;
-    const body = await req.json();
+    const productId = getProductIdFromRequest(req);
+    if (!productId) {
+        return NextResponse.json({ message: 'Product ID is missing from URL.' }, { status: 400 });
+    }
 
-    // Validasi data yang masuk menggunakan Zod
+    const body = await req.json();
     const validatedData = productUpdateSchema.partial().parse(body);
 
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data: {
         ...validatedData,
-        // Logika khusus untuk menghubungkan/memutuskan kategori
         ...(validatedData.categoryId !== undefined && {
             category: validatedData.categoryId 
                 ? { connect: { id: validatedData.categoryId } } 
@@ -101,25 +105,25 @@ export async function PUT(
 
 
 /**
- * PATCH: Mengubah status produk (misalnya dari ACTIVE ke ARCHIVED).
- * Ini adalah implementasi dari "soft delete".
+ * PATCH: Mengubah status produk (soft delete/archive).
  */
-export async function PATCH(
-  req: NextRequest,
-  context: { params: { productId: string } }
-) {
+export async function PATCH(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (session?.user?.role !== 'admin') {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
+    
+    const productId = getProductIdFromRequest(req);
+    if (!productId) {
+        return NextResponse.json({ message: 'Product ID is missing from URL.' }, { status: 400 });
+    }
 
-    const { productId } = context.params;
     const body = await req.json();
     const { status } = body;
 
     if (!status || (status !== 'ACTIVE' && status !== 'ARCHIVED')) {
-      return NextResponse.json({ message: 'Invalid status provided. Must be ACTIVE or ARCHIVED.' }, { status: 400 });
+      return NextResponse.json({ message: 'Invalid status. Must be ACTIVE or ARCHIVED.' }, { status: 400 });
     }
 
     const updatedProduct = await prisma.product.update({
