@@ -184,7 +184,7 @@ const Header = () => {
                       {session.user?.role === "admin" && (
                         <Link href="/admin/dashboard">
                           <span className="text-xs text-blue-600 underline mt-1 hover:text-blue-800">
-                            Admin Dashboard
+                            Dashboard
                           </span>
                         </Link>
                       )}
