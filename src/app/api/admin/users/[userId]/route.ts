@@ -1,81 +1,121 @@
-// File: src/app/api/admin/users/[userId]/route.ts (Versi Final Menggunakan req.nextUrl)
+// File: src/app/api/admin/users/[userId]/route.ts
 
-import { NextResponse, NextRequest } from 'next/server'; // Impor NextRequest
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import { z } from 'zod';
+
+// Skema validasi untuk data yang masuk saat update (PUT)
+const userUpdateSchema = z.object({
+  name: z.string().min(3, { message: 'Name must be at least 3 characters long.' }),
+  email: z.string().email({ message: 'Invalid email address.' }),
+  role: z.enum(['ADMIN', 'USER', 'EDITOR'], { message: "Role must be one of: 'ADMIN', 'USER', 'EDITOR'." }),
+});
+
 
 /**
- * GET handler untuk mengambil data satu pengguna berdasarkan ID.
+ * GET: Mengambil detail satu pengguna berdasarkan ID.
  */
-export async function GET(req: NextRequest) { // Hanya menggunakan req sebagai parameter
+export async function GET(
+  req: Request,
+  { params }: { params: { userId: string } }
+) {
+  // Keamanan: Hanya admin yang bisa melihat detail pengguna
   const session = await getServerSession(authOptions);
-  if (session?.user?.role !== 'ADMIN') {
+  if (!session || session.user.role !== 'admin') {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }
 
   try {
-    // Ambil segmen terakhir dari URL sebagai userId
-    const userId = req.nextUrl.pathname.split('/').pop();
-
-    if (!userId) {
-        return NextResponse.json({ message: 'User ID is missing from URL' }, { status: 400 });
-    }
-
     const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-      },
+      where: { id: params.userId },
     });
 
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    // Jangan kirim password hash ke frontend
+    const { password, ...userWithoutPassword } = user;
+    return NextResponse.json(userWithoutPassword);
+
   } catch (error) {
-    console.error("Failed to fetch user:", error);
-    return NextResponse.json({ message: 'Failed to fetch user', error: (error as Error).message }, { status: 500 });
+    console.error(`[GET_USER_ERROR]`, error);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
 
+
 /**
- * PUT handler untuk memperbarui detail pengguna.
+ * PUT: Memperbarui data seorang pengguna berdasarkan ID.
  */
-export async function PUT(req: NextRequest) { // Hanya menggunakan req sebagai parameter
+export async function PUT(
+  req: Request,
+  { params }: { params: { userId: string } }
+) {
+  // Keamanan: Hanya admin yang bisa mengedit pengguna
   const session = await getServerSession(authOptions);
-  if (session?.user?.role !== 'ADMIN') {
+  if (!session || session.user.role !== 'admin') {
     return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
   }
 
   try {
-    // Ambil segmen terakhir dari URL sebagai userId
-    const userId = req.nextUrl.pathname.split('/').pop();
-    const { name, email, role } = await req.json();
-
-    if (!userId) {
-        return NextResponse.json({ message: 'User ID is missing from URL' }, { status: 400 });
-    }
-    if (!name || !email || !role) {
-      return NextResponse.json({ message: 'Name, email, and role are required' }, { status: 400 });
-    }
+    const body = await req.json();
+    const { name, email, role } = userUpdateSchema.parse(body); // Validasi input
 
     const updatedUser = await prisma.user.update({
-      where: { id: userId },
+      where: { id: params.userId },
       data: {
         name,
         email,
         role,
       },
     });
+    
+    // Jangan kirim password hash ke frontend
+    const { password, ...userWithoutPassword } = updatedUser;
+    return NextResponse.json(userWithoutPassword, { status: 200 });
 
-    return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error("Failed to update user:", error);
-    return NextResponse.json({ message: 'Failed to update user', error: (error as Error).message }, { status: 500 });
+    // Tangani error validasi dari Zod
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ message: error.issues[0].message }, { status: 400 });
+    }
+    
+    // Tangani error umum lainnya
+    console.error(`[PUT_USER_ERROR]`, error);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+
+/**
+ * DELETE: Menghapus seorang pengguna berdasarkan ID.
+ * (Fungsi dari langkah sebelumnya, disertakan untuk kelengkapan)
+ */
+export async function DELETE(
+  req: Request,
+  { params }: { params: { userId: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== 'admin') {
+    return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+  }
+
+  if (session.user.id === params.userId) {
+    return NextResponse.json({ message: 'Admin cannot delete their own account.' }, { status: 400 });
+  }
+
+  try {
+    await prisma.user.delete({
+      where: { id: params.userId },
+    });
+    return NextResponse.json({ message: 'User deleted successfully.' }, { status: 200 });
+  } catch (error: any) {
+    if (error.code === 'P2025') {
+      return NextResponse.json({ message: 'Error: User not found.' }, { status: 404 });
+    }
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
