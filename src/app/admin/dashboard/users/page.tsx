@@ -3,18 +3,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-// === PERUBAHAN DI SINI: FiEdit3 dihapus dari import ===
 import { FiUsers, FiArrowLeft, FiTrash2, FiSearch } from 'react-icons/fi';
 
 /**
  * @interface User
  * Mendefinisikan struktur objek untuk data pengguna.
- * @property {string} id - ID unik pengguna.
- * @property {string | null} name - Nama lengkap pengguna.
- * @property {string | null} email - Alamat email pengguna.
- * @property {string | null} role - Peran pengguna dalam sistem (misalnya, 'admin', 'user', 'editor').
- * @property {string} createdAt - Tanggal dan waktu pembuatan akun pengguna, dalam format string ISO.
- * @property {string | null} [image] - URL opsional ke gambar avatar pengguna.
  */
 interface User {
   id: string;
@@ -28,23 +21,13 @@ interface User {
 /**
  * Komponen `ManageUsersPage` adalah halaman untuk menampilkan, mencari, dan mengelola
  * daftar pengguna dalam dashboard admin.
- * @returns {JSX.Element} Halaman antarmuka untuk manajemen pengguna.
  */
 const ManageUsersPage = () => {
-  /** State untuk menyimpan daftar semua pengguna yang diambil dari API. */
   const [users, setUsers] = useState<User[]>([]);
-  /** State untuk menandakan status loading saat mengambil data pengguna. */
   const [loading, setLoading] = useState(true);
-  /** State untuk menyimpan pesan error jika terjadi kesalahan saat pengambilan data. */
   const [error, setError] = useState<string | null>(null);
-  /** State untuk menyimpan term pencarian yang dimasukkan pengguna. */
   const [searchTerm, setSearchTerm] = useState('');
 
-  /**
-   * Fungsi `fetchUsers` mengambil daftar pengguna dari endpoint API `/api/admin/users`.
-   * Fungsi ini menggunakan `useCallback` untuk memoization, berguna jika diteruskan sebagai prop
-   * atau digunakan dalam dependency array `useEffect` lainnya.
-   */
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -66,13 +49,8 @@ const ManageUsersPage = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]); // fetchUsers dimasukkan sebagai dependensi karena sudah di-memoize dengan useCallback.
+  }, [fetchUsers]);
 
-  /**
-   * Memformat string tanggal ISO menjadi format tanggal lokal Indonesia (misalnya, "6 Juni 2025").
-   * @param {string} dateString - String tanggal dalam format ISO yang akan diformat.
-   * @returns {string} Representasi string tanggal yang sudah diformat, atau 'N/A' jika input tidak valid.
-   */
   const formatDate = (dateString: string): string => {
     if (!dateString) return 'N/A';
     try {
@@ -82,17 +60,11 @@ const ManageUsersPage = () => {
         day: 'numeric',
       });
     } catch (e) {
-      // Menangani kasus jika dateString tidak valid dan menyebabkan error pada constructor Date
       console.error("Invalid date string for formatDate:", dateString, e);
       return 'Invalid Date';
     }
   };
 
-  /**
-   * Mengembalikan string kelas CSS Tailwind berdasarkan peran pengguna untuk styling badge.
-   * @param {string | null} role - Peran pengguna (misalnya, 'admin', 'editor', 'user').
-   * @returns {string} String kelas CSS untuk badge peran.
-   */
   const getRoleBadgeClass = (role: string | null): string => {
     switch (role?.toLowerCase()) {
       case 'admin':
@@ -105,22 +77,12 @@ const ManageUsersPage = () => {
     }
   };
 
-  /**
-   * Menyaring daftar pengguna berdasarkan `searchTerm`.
-   * Pencarian dilakukan pada nama, email, dan peran pengguna (case-insensitive).
-   */
   const filteredUsers = users.filter(user =>
     (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.role?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
 
-  /**
-   * Menangani aksi penghapusan pengguna.
-   * Memunculkan dialog konfirmasi sebelum melanjutkan.
-   * Implementasi API delete sesungguhnya perlu ditambahkan.
-   * @param {string} userId - ID dari pengguna yang akan dihapus.
-   */
   const handleDeleteUser = async (userId: string) => {
     if (window.confirm(`Anda yakin ingin menghapus pengguna dengan ID: ${userId}? Tindakan ini tidak dapat diurungkan.`)) {
       console.log("Attempting to delete user:", userId);
@@ -132,7 +94,7 @@ const ManageUsersPage = () => {
           throw new Error(errorData.message || 'Gagal menghapus pengguna.');
         }
         alert('Pengguna berhasil dihapus.');
-        fetchUsers(); // Refresh daftar pengguna
+        fetchUsers();
       } catch (err: any) {
         setError(err.message || 'Gagal menghapus pengguna.');
         console.error("Delete user error:", err);
@@ -160,7 +122,7 @@ const ManageUsersPage = () => {
           <h2 className="text-xl font-semibold text-red-700 mb-2">Oops! Something went wrong.</h2>
           <p className="text-red-600 mb-4">{error}</p>
           <button
-            onClick={fetchUsers} // Menggunakan fungsi fetchUsers yang sudah di-memoize
+            onClick={fetchUsers}
             className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm font-medium"
           >
             Try Again
@@ -183,24 +145,38 @@ const ManageUsersPage = () => {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          {/*
-            Placeholder untuk tombol "Add New User".
-            Aktifkan jika halaman dan fungsionalitasnya sudah ada.
-            <Link
-              href="/admin/dashboard/users/new"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-sm font-medium shadow-sm"
-            >
-              <FiPlusCircle size={18}/>
-              Add New User
-            </Link>
-          */}
+          {/* === PERUBAHAN DI SINI === */}
           <Link
             href="/admin/dashboard"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm font-medium shadow-sm"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#4B5563', // bg-gray-600
+              color: 'white',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              textDecoration: 'none',
+              boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+              transition: 'background-color 0.2s ease-out',
+              width: '100%', // Meniru 'w-full'
+            }}
+            // Trik untuk meniru 'sm:w-auto'
+            onLoad={(e) => {
+                if (window.innerWidth >= 640) { // 640px adalah breakpoint 'sm'
+                    e.currentTarget.style.width = 'auto';
+                }
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#374151'} // hover:bg-gray-700
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4B5563'}
           >
             <FiArrowLeft size={18} />
             Back to Dashboard
           </Link>
+          {/* === AKHIR PERUBAHAN === */}
         </div>
       </div>
 
@@ -270,7 +246,6 @@ const ManageUsersPage = () => {
                     </td>
                     <td className="px-6 py-4 text-gray-600">{formatDate(user.createdAt)}</td>
                     <td className="px-6 py-4 text-center whitespace-nowrap">
-                      {/* === PERUBAHAN DI SINI: Link Edit dihapus === */}
                       <button
                         onClick={() => handleDeleteUser(user.id)}
                         className="font-medium text-red-600 hover:text-red-800 hover:underline transition-colors"
