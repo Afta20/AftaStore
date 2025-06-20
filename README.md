@@ -46,7 +46,14 @@ Afta-Store adalah aplikasi web e-commerce fungsional yang mensimulasikan toko ri
 
 Proyek ini dirancang untuk menunjukkan penerapan praktik terbaik dalam pengembangan web modern, termasuk arsitektur Server & Client Component, otentikasi yang aman, manajemen state yang efisien, dan interaksi database yang *type-safe*.
 
+Untuk Login Dashboard User /Pembeli disini saya melakukan pengaturan User dan password berupa
+
+Acc : pembeli123@gmail.com
+Pw  : pembeli123
+
+
 Untuk Login Dashboard admin disini saya melakukan pengaturan User dan password berupa 
+
 Acc : AkuAdmin@gmail.com
 Pw  : AkuAdmin2004
 
