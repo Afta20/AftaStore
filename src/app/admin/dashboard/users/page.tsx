@@ -193,13 +193,39 @@ const ManageUsersPage = () => {
               Add New User
             </Link>
           */}
+          {/* === PERUBAHAN DI SINI === */}
           <Link
             href="/admin/dashboard"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm font-medium shadow-sm"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#4B5563', // bg-gray-600
+              color: 'white',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              textDecoration: 'none',
+              boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+              transition: 'background-color 0.2s ease-out',
+              width: '100%', // w-full
+            }}
+            // Di layar yang lebih besar, style di bawah akan menimpa 'width'
+            // Ini adalah cara meniru 'sm:w-auto' dengan JavaScript
+            onLoad={(e) => {
+                if (window.innerWidth >= 640) { // 640px adalah breakpoint 'sm' di Tailwind
+                    e.currentTarget.style.width = 'auto';
+                }
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#374151'} // hover:bg-gray-700
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4B5563'}
           >
             <FiArrowLeft size={18} />
             Back to Dashboard
           </Link>
+          {/* === AKHIR PERUBAHAN === */}
         </div>
       </div>
 
@@ -226,7 +252,7 @@ const ManageUsersPage = () => {
             </p>
             {searchTerm && (
                  <p className="text-sm text-gray-400 mt-2">
-                    Try adjusting your search terms.
+                   Try adjusting your search terms.
                  </p>
             )}
         </div>
