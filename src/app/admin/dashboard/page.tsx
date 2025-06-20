@@ -268,7 +268,7 @@ const AdminDashboardPage = () => {
   return (
     <div className="space-y-6 md:space-y-8 p-4 md:p-6 lg:p-8">
       <h1 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-white">
-        Admin Dashboard
+      Dashboard
       </h1>
 
       {summaryData && (
