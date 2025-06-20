@@ -1,4 +1,4 @@
-// File: src/app/api/products/route.ts (Versi Final)
+// File: src/app/api/products/route.ts
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -6,22 +6,24 @@ import prisma from '@/lib/prisma';
 export async function GET() {
   try {
     const productsFromDb = await prisma.product.findMany({
+      // Menggunakan filter cerdas dari kode Anda
       where: {
         stock: {
-          gt: 0, // Hanya tampilkan produk yang stoknya lebih dari 0
+          gt: 0, // Hanya produk yang stoknya lebih dari 0
         },
-        status: "ACTIVE", // Hanya tampilkan produk yang statusnya aktif
+        status: "ACTIVE", // Hanya produk yang statusnya aktif
       },
       orderBy: {
         createdAt: 'desc',
       },
-      // Memilih field sesuai dengan schema.prisma Anda
-      select: {
-        id: true,
-        title: true,         // Sesuai dengan skema
-        price: true,
-        discountedPrice: true, // Sesuai dengan skema
-        imagePreviews: true,   // Sesuai dengan skema
+      // === PERUBAHAN UTAMA DI SINI ===
+      // Menggunakan 'include' untuk mengambil data dari tabel Category yang terhubung
+      include: {
+        category: {
+          select: {
+            name: true, // Kita hanya butuh nama kategorinya
+          },
+        },
       },
     });
 
@@ -30,6 +32,7 @@ export async function GET() {
       ...p,
       price: Number(p.price),
       discountedPrice: p.discountedPrice ? Number(p.discountedPrice) : null,
+      // 'category' object sudah otomatis disertakan dari 'include'
     }));
 
     return NextResponse.json(products);
