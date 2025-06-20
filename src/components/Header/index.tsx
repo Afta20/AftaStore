@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import CustomSelect from "./CustomSelect";
 import { menuData } from "./menuData";
@@ -24,6 +25,8 @@ const Header = () => {
   const { data: session } = useSession();
   const product = useAppSelector((state) => state.cartReducer.items);
   const totalPrice = useSelector(selectTotalPrice);
+  const router = useRouter();
+
 
   const handleOpenCartModal = () => {
     openCartModal();
@@ -86,10 +89,8 @@ const Header = () => {
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (searchQuery.trim()) {
-                    window.location.href = `/shop-without-sidebar?query=${encodeURIComponent(
-                      searchQuery.trim()
-                    )}`;
-                  }
+                    router.push(`/shop-without-sidebar?query=${encodeURIComponent(searchQuery.trim())}`);
+                }
                 }}
               >
                 <div className="flex items-center">
