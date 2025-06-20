@@ -166,6 +166,15 @@ const Header = () => {
 
             <div className="flex w-full lg:w-auto justify-between items-center gap-5">
               <div className="flex items-center gap-5">
+                <div className="flex w-full lg:w-auto justify-between items-center gap-5">
+                {session?.user?.role === "admin" && (
+                <Link href="/admin/dashboard">
+                  <button className="px-3 py-1 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 transition">
+                    Admin Dashboard
+                  </button>
+                </Link>
+              )}
+              </div>
                 {session ? (
                   <div className="flex items-center gap-2.5">
                     <svg

@@ -7,7 +7,6 @@ import { type AuthOptions } from "next-auth";
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
-    // PERBAIKAN #1: Hapus .default
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -43,7 +42,6 @@ export const authOptions: AuthOptions = {
     // Tambahkan provider lain di sini jika ada
   ],
   callbacks: {
-    // PERBAIKAN #2: TypeScript sekarang akan mengenali 'user.role' karena file next-auth.d.ts
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -51,7 +49,7 @@ export const authOptions: AuthOptions = {
       }
       return token;
     },
-    // PERBAIKAN #3: TypeScript sekarang akan mengenali 'session.user.id' dan 'session.user.role'
+
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id;

@@ -208,8 +208,6 @@ const AdminDashboardPage = () => {
     }
   }, [allProducts, allCategories, loading]);
 
-  // ... (sisa kode untuk salesChartData, salesChartOptions, categoryPieChartOptions, dan return JSX tetap sama seperti di artifact admin_dashboard_page_real_category_chart) ...
-  // Pastikan Anda menggunakan 'categoryPieChartData' untuk data Pie/Doughnut chart
   
   if (loading) {
     return <div className="p-6 text-center text-gray-700">Loading dashboard data...</div>;
