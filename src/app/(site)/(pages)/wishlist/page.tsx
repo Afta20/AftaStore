@@ -1,4 +1,4 @@
-// File: src/app/wishlist/page.tsx (Versi Final dengan Desain Tabel)
+// File: src/app/wishlist/page.tsx (Versi Final dengan Tombol Inline CSS)
 "use client";
 
 import React from "react";
@@ -78,10 +78,27 @@ const WishlistPage = () => {
 
                   {/* <!-- wish item --> */}
                   {wishlistItems.map((item) => {
-                    // === PERBAIKAN UTAMA ADA DI SINI ===
                     const imageUrl = item.imagePreviews && item.imagePreviews.length > 0 ? item.imagePreviews[0] : null;
                     const displayPrice = item.discountedPrice ?? item.price;
                     const stockStatus = item.stock && item.stock > 0 ? "In Stock" : "Out of Stock";
+                    const isOutOfStock = stockStatus === "Out of Stock";
+
+                    // === STYLE UNTUK TOMBOL ADD TO CART ===
+                    const cartButtonStyle: React.CSSProperties = {
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.5rem 1rem',
+                      backgroundColor: isOutOfStock ? '#9CA3AF' : '#2563EB', // Abu-abu jika disabled, biru jika aktif
+                      color: 'white',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      border: 'none',
+                      transition: 'background-color 0.2s',
+                      cursor: isOutOfStock ? 'not-allowed' : 'pointer',
+                      opacity: isOutOfStock ? 0.5 : 1,
+                    };
 
                     return (
                       <div key={item.id} className="flex items-center border-t border-gray-2 dark:border-gray-700 py-5.5 px-10">
@@ -115,11 +132,14 @@ const WishlistPage = () => {
                           </span>
                         </div>
                         <div className="min-w-[150px] flex justify-end items-center gap-3">
+                          {/* === TOMBOL ADD TO CART MENGGUNAKAN INLINE CSS === */}
                           <button
                             onClick={() => handleAddToCart(item)}
-                            disabled={stockStatus === "Out of Stock"}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isOutOfStock}
+                            style={cartButtonStyle}
                             title="Add to Cart"
+                            onMouseOver={(e) => { if (!isOutOfStock) e.currentTarget.style.backgroundColor = '#1D4ED8'; }}
+                            onMouseOut={(e) => { if (!isOutOfStock) e.currentTarget.style.backgroundColor = '#2563EB'; }}
                           >
                             <FiShoppingCart size={16} />
                             Add to Cart

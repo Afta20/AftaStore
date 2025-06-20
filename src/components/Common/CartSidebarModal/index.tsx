@@ -1,17 +1,13 @@
 // File: src/components/Common/CartSidebarModal/index.tsx
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
-import {
-  selectTotalPrice,
-} from "@/redux/features/cart-slice";
+import { selectTotalPrice } from "@/redux/features/cart-slice";
 import { useAppSelector } from "@/redux/store";
 import { useSelector } from "react-redux";
-import SingleItem from "./SingleItem"; // Pastikan path ini benar
-import Link from "next/link";
-import EmptyCart from "./EmptyCart"; // Pastikan path ini benar
+import SingleItem from "./SingleItem";
+import EmptyCart from "./EmptyCart";
 
 const CartSidebarModal = () => {
   const { isCartModalOpen, closeCartModal } = useCartModalContext();
@@ -64,11 +60,7 @@ const CartSidebarModal = () => {
             <div className="flex flex-col gap-6">
               {cartItems.length > 0 ? (
                 cartItems.map((item) => (
-                  // === PERUBAHAN DI SINI: Hapus prop removeItemFromCart ===
-                  <SingleItem
-                    key={item.id} // Gunakan item.id yang unik sebagai key
-                    item={item}
-                  />
+                  <SingleItem key={item.id} item={item} />
                 ))
               ) : (
                 <EmptyCart />
@@ -81,28 +73,36 @@ const CartSidebarModal = () => {
               <p className="font-medium text-xl text-dark dark:text-white">Subtotal:</p>
               <p className="font-medium text-xl text-dark dark:text-white">Rp.{totalPrice.toLocaleString('id-ID')}</p>
             </div>
-
             <div className="flex items-center gap-4">
               <button
                 onClick={() => {
                   closeCartModal();
-                  setTimeout(() => {
-                    router.push("/cart");
-                  }, 300); 
+                  setTimeout(() => { router.push("/cart"); }, 300); 
                 }}
-                className="w-full flex justify-center font-medium text-white bg-blue-600 py-[13px] px-6 rounded-md ease-out duration-200 hover:bg-blue-700"
+                style={{
+                  width: '100%', display: 'flex', justifyContent: 'center', fontWeight: 500,
+                  color: 'white', backgroundColor: '#3b82f6', // bg-blue-600
+                  padding: '13px 24px', borderRadius: '0.375rem',
+                  transition: 'background-color 0.2s ease-out', border: 'none', cursor: 'pointer'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
               >
                 View Cart
               </button>
-
               <button
                 onClick={() => {
                   closeCartModal();
-                  setTimeout(() => {
-                    router.push("/checkout");
-                  }, 300);
+                  setTimeout(() => { router.push("/checkout"); }, 300);
                 }}
-                className="w-full flex justify-center font-medium text-white bg-dark dark:bg-gray-700 py-[13px] px-6 rounded-md ease-out duration-200 hover:bg-opacity-95"
+                style={{
+                  width: '100%', display: 'flex', justifyContent: 'center', fontWeight: 500,
+                  color: 'white', backgroundColor: '#1F2937', // bg-dark
+                  padding: '13px 24px', borderRadius: '0.375rem',
+                  transition: 'opacity 0.2s ease-out', border: 'none', cursor: 'pointer'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = '0.95'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
               >
                 Checkout
               </button>
