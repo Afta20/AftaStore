@@ -6,12 +6,6 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 
-// Helper function untuk mengambil productId dari request URL
-const getProductIdFromRequest = (req: NextRequest): string | null => {
-    const segments = req.nextUrl.pathname.split('/');
-    return segments.pop() || null;
-}
-
 // Skema validasi untuk data update produk
 const productUpdateSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters."),
@@ -24,6 +18,11 @@ const productUpdateSchema = z.object({
   status: z.enum(['ACTIVE', 'ARCHIVED']).optional(),
 });
 
+// Helper function untuk mengambil ID dari URL, menghindari bug build Vercel
+const getProductIdFromRequest = (req: NextRequest): string | null => {
+    const segments = req.nextUrl.pathname.split('/');
+    return segments.pop() || null;
+}
 
 /**
  * GET: Mengambil detail satu produk untuk halaman edit.
@@ -37,7 +36,7 @@ export async function GET(req: NextRequest) {
 
     const productId = getProductIdFromRequest(req);
     if (!productId) {
-        return NextResponse.json({ message: 'Product ID is missing from URL.' }, { status: 400 });
+      return NextResponse.json({ message: 'Product ID is missing.' }, { status: 400 });
     }
 
     const product = await prisma.product.findUnique({
@@ -50,18 +49,17 @@ export async function GET(req: NextRequest) {
     }
     
     const responseProduct = {
-        ...product,
-        price: Number(product.price),
-        discountedPrice: product.discountedPrice ? Number(product.discountedPrice) : null,
+      ...product,
+      price: Number(product.price),
+      discountedPrice: product.discountedPrice ? Number(product.discountedPrice) : null,
     };
-
     return NextResponse.json(responseProduct);
+
   } catch (error) {
     console.error(`[GET_PRODUCT_ERROR]`, error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
-
 
 /**
  * PUT: Memperbarui detail produk setelah diedit.
@@ -75,7 +73,7 @@ export async function PUT(req: NextRequest) {
 
     const productId = getProductIdFromRequest(req);
     if (!productId) {
-        return NextResponse.json({ message: 'Product ID is missing from URL.' }, { status: 400 });
+      return NextResponse.json({ message: 'Product ID is missing.' }, { status: 400 });
     }
 
     const body = await req.json();
@@ -92,7 +90,6 @@ export async function PUT(req: NextRequest) {
         })
       },
     });
-
     return NextResponse.json(updatedProduct, { status: 200 });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -105,7 +102,39 @@ export async function PUT(req: NextRequest) {
 
 
 /**
- * PATCH: Mengubah status produk (soft delete/archive).
+ * DELETE: Melakukan "soft delete" dengan mengubah status produk menjadi ARCHIVED.
+ * Ini adalah fungsi yang dipanggil saat admin menekan tombol "Delete" di frontend.
+ */
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== 'admin') {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
+    const productId = getProductIdFromRequest(req);
+    if (!productId) {
+      return NextResponse.json({ message: 'Product ID is missing' }, { status: 400 });
+    }
+
+    await prisma.product.update({
+      where: { id: productId },
+      data: { status: 'ARCHIVED' },
+    });
+
+    return NextResponse.json({ message: 'Product archived successfully' }, { status: 200 });
+  } catch (error: any) {
+    console.error(`[ARCHIVE_PRODUCT_ERROR]`, error);
+    if (error.code === 'P2025') {
+      return NextResponse.json({ message: 'Product not found.' }, { status: 404 });
+    }
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+/**
+ * PATCH: Mengubah status produk menjadi ACTIVE.
+ * Ini adalah fungsi yang dipanggil saat admin menekan tombol "Activate".
  */
 export async function PATCH(req: NextRequest) {
   try {
@@ -116,27 +145,20 @@ export async function PATCH(req: NextRequest) {
     
     const productId = getProductIdFromRequest(req);
     if (!productId) {
-        return NextResponse.json({ message: 'Product ID is missing from URL.' }, { status: 400 });
+      return NextResponse.json({ message: 'Product ID is missing.' }, { status: 400 });
     }
 
-    const body = await req.json();
-    const { status } = body;
-
-    if (!status || (status !== 'ACTIVE' && status !== 'ARCHIVED')) {
-      return NextResponse.json({ message: 'Invalid status. Must be ACTIVE or ARCHIVED.' }, { status: 400 });
-    }
-
-    const updatedProduct = await prisma.product.update({
+    await prisma.product.update({
       where: { id: productId },
-      data: { status: status },
+      data: { status: 'ACTIVE' },
     });
 
-    return NextResponse.json(updatedProduct, { status: 200 });
+    return NextResponse.json({ message: 'Product activated successfully' }, { status: 200 });
   } catch (error: any) {
-    console.error(`[PATCH_PRODUCT_STATUS_ERROR]`, error);
-    if (error.code === 'P2025') {
+     if (error.code === 'P2025') {
       return NextResponse.json({ message: 'Error: Product not found.' }, { status: 404 });
     }
+    console.error(`[ACTIVATE_PRODUCT_ERROR]`, error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
