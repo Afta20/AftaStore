@@ -39,6 +39,7 @@ const ManageProductsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [categoryDistribution, setCategoryDistribution] = useState<CategoryDistributionChartData | null>(null);
 
+  // Fungsi untuk mengambil SEMUA produk (termasuk yang diarsipkan)
   const fetchProducts = async () => {
     setLoading(true);
     setError(null);
@@ -56,10 +57,14 @@ const ManageProductsPage = () => {
     }
   };
 
+  // === DIKEMBALIKAN: Memproses semua produk untuk chart, bukan hanya yang aktif ===
   const processCategoryData = (productList: Product[]) => {
-    const activeProducts = productList.filter(p => p.status === 'ACTIVE');
+    if (productList.length === 0) {
+      setCategoryDistribution({ labels: [], counts: [] });
+      return;
+    }
     const counts: { [key: string]: number } = {};
-    activeProducts.forEach(product => {
+    productList.forEach(product => {
       const catName = product.category?.name || 'Uncategorized';
       counts[catName] = (counts[catName] || 0) + 1;
     });
@@ -79,51 +84,48 @@ const ManageProductsPage = () => {
     }
   }, [products, loading]);
 
-  const handleUpdateStatus = async (productId: string, newStatus: 'ARCHIVED' | 'ACTIVE') => {
+  // Fungsi untuk mengarsipkan (soft delete) atau mengaktifkan produk
+  const handleUpdateStatus = async (productId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'ACTIVE' ? 'ARCHIVED' : 'ACTIVE';
     const action = newStatus === 'ARCHIVED' ? 'archive' : 'activate';
+
     if (window.confirm(`Are you sure you want to ${action} this product?`)) {
       try {
         const response = await fetch(`/api/admin/products/${productId}`, {
-          method: 'DELETE', // Kita tetap gunakan DELETE, backend yang akan menerjemahkannya
+          method: 'PATCH', // Menggunakan PATCH untuk update
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
         });
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `Failed to ${action} product.`);
-        }
+        if (!response.ok) throw new Error(`Failed to ${action} product.`);
         alert(`Product ${action}d successfully.`);
-        fetchProducts();
+        fetchProducts(); // Refresh data
       } catch (err: any) {
         alert(`Error: ${err.message}`);
       }
     }
   };
   
-  // === PERBAIKAN WARNA PIE CHART DI SINI ===
   const categoryPieData = categoryDistribution ? {
     labels: categoryDistribution.labels,
     datasets: [{
       label: 'Number of Products',
       data: categoryDistribution.counts,
-      backgroundColor: [
-        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-        '#E7E9ED', '#8C564B', '#CFECF9', '#D62728',
-      ],
+      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
       borderColor: '#FFFFFF',
       borderWidth: 2,
     }],
   } : null;
 
   const categoryPieOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
+    responsive: true, maintainAspectRatio: false,
     plugins: {
       legend: { position: 'top' as const },
-      title: { display: true, text: 'Active Product Distribution by Category' },
+      title: { display: true, text: 'Product Distribution by Category' },
     },
   };
 
-  const activeProducts = products.filter(p => p.status === 'ACTIVE');
-  const totalStock = activeProducts.reduce((acc, product) => acc + (product.stock || 0), 0);
+  // === DIKEMBALIKAN: Kalkulasi statistik untuk SEMUA produk ===
+  const totalStock = products.reduce((acc, product) => acc + (product.stock || 0), 0);
   const uniqueCategoriesCount = categoryDistribution?.labels.length ?? 0;
 
   const cardStyle: React.CSSProperties = { padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)', textAlign: 'center' };
@@ -144,11 +146,11 @@ const ManageProductsPage = () => {
         <h2 className="text-xl font-semibold text-gray-700 dark:text-white mb-6 text-center">Product Overview</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-8">
           <div style={cardStyle} className="dark:bg-gray-700">
-            <h3 style={cardTitleStyle} className="dark:text-gray-300">Active Products</h3>
-            <p style={cardStatStyle} className="dark:text-white">{loading ? '...' : activeProducts.length}</p>
+            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Products</h3>
+            <p style={cardStatStyle} className="dark:text-white">{loading ? '...' : products.length}</p>
           </div>
           <div style={cardStyle} className="dark:bg-gray-700">
-            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Stocks (Active)</h3>
+            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Stocks</h3>
             <p style={cardStatStyle} className="dark:text-white">{loading ? '...' : totalStock.toLocaleString('id-ID')}</p>
           </div>
           <div style={cardStyle} className="dark:bg-gray-700">
