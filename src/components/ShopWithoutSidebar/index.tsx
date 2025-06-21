@@ -16,11 +16,13 @@ const ShopWithoutSidebarComponent = async ({ query, category }: ComponentProps) 
   const lowerCaseQuery = query?.toLowerCase() || "";
   const categoryId = category;
 
+
   const whereClause: any = {
+    //  kondisi WAJIB: produk harus berstatus ACTIVE
     status: 'ACTIVE',
   };
 
-  // Tambahkan filter lain jika ada
+  //  filter lain jika ada
   if (lowerCaseQuery) {
     whereClause.title = {
       contains: lowerCaseQuery,
@@ -31,7 +33,7 @@ const ShopWithoutSidebarComponent = async ({ query, category }: ComponentProps) 
   if (categoryId && !isNaN(parseInt(categoryId)) && parseInt(categoryId) !== 0) {
     whereClause.categoryId = parseInt(categoryId);
   }
-  // === AKHIR PERBAIKAN ===
+
 
 
   const productsFromDB = await prisma.product.findMany({
@@ -44,8 +46,8 @@ const ShopWithoutSidebarComponent = async ({ query, category }: ComponentProps) 
       imagePreviews: true,
       reviews: true,
       stock: true,
-      status: true, // Sertakan status untuk debugging jika perlu
-      category: { // Sertakan nama kategori
+      status: true,
+      category: {
         select: {
             name: true,
         }
