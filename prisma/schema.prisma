@@ -83,7 +83,7 @@ model Product {
   category        Category? @relation(fields: [categoryId], references: [id])
 
   orderItems OrderItem[]
-  @@index([categoryId]) // Tambahkan index untuk performa query berdasarkan kategori
+  @@index([categoryId]) 
   // @@index([sellerId])
 }
 
