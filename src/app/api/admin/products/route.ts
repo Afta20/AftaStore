@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
         imagePreviews: true,
         createdAt: true,
         categoryId: true,
+        status: true,
         category: {
           select: {
             name: true,

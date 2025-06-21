@@ -60,12 +60,9 @@ const ManageProductsPage = () => {
     fetchProducts();
   }, [fetchProducts]);
 
-  // Memproses data untuk chart
   const processCategoryData = useCallback((productList: Product[]) => {
-    // Grafik HANYA menghitung produk yang statusnya ACTIVE
-    const activeProducts = productList.filter(p => p.status === 'ACTIVE');
     const counts: { [key: string]: number } = {};
-    activeProducts.forEach(product => {
+    productList.forEach(product => {
       const catName = product.category?.name || 'Uncategorized';
       counts[catName] = (counts[catName] || 0) + 1;
     });
@@ -81,8 +78,7 @@ const ManageProductsPage = () => {
     }
   }, [products, loading, processCategoryData]);
 
-  // Fungsi untuk update status (Arsip & Aktifkan)
-  const handleUpdateStatus = useCallback(async (productId: string, currentStatus: string) => {
+  const handleUpdateStatus = useCallback(async (productId: string, currentStatus: 'ACTIVE' | 'ARCHIVED') => {
     const newStatus = currentStatus === 'ACTIVE' ? 'ARCHIVED' : 'ACTIVE';
     const action = newStatus === 'ARCHIVED' ? 'archive' : 'activate';
 
@@ -93,17 +89,18 @@ const ManageProductsPage = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: newStatus }),
         });
-        if (!response.ok) throw new Error(`Failed to ${action} product.`);
-        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Failed to ${action} product.`);
+        }
         alert(`Product ${action}d successfully.`);
-        fetchProducts(); // Refresh data setelah berhasil
+        fetchProducts();
       } catch (err: any) {
         alert(`Error: ${err.message}`);
       }
     }
   }, [fetchProducts]);
-
-  // Data dan Opsi Pie Chart dari kode Anda
+  
   const categoryPieData = categoryDistribution ? {
     labels: categoryDistribution.labels,
     datasets: [{
@@ -114,12 +111,10 @@ const ManageProductsPage = () => {
       borderWidth: 2,
     }],
   } : null;
-  const categoryPieOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' as const }, title: { display: true, text: 'Active Product Distribution' }}};
+  const categoryPieOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' as const }, title: { display: true, text: 'Product Distribution by Category' }}};
 
-  // === PERBAIKAN LOGIKA STATISTIK ===
-  // Filter produk yang aktif untuk dihitung di statistik
-  const activeProducts = products.filter(p => p.status === 'ACTIVE');
-  const totalStock = activeProducts.reduce((acc, product) => acc + (product.stock || 0), 0);
+  // DIKEMBALIKAN: Statistik menghitung SEMUA produk
+  const totalStock = products.reduce((acc, product) => acc + (product.stock || 0), 0);
   const uniqueCategoriesCount = categoryDistribution?.labels.length ?? 0;
 
   const cardStyle: React.CSSProperties = { padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)', textAlign: 'center' };
@@ -140,11 +135,11 @@ const ManageProductsPage = () => {
         <h2 className="text-xl font-semibold text-gray-700 dark:text-white mb-6 text-center">Product Overview</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-8">
           <div style={cardStyle} className="dark:bg-gray-700">
-            <h3 style={cardTitleStyle} className="dark:text-gray-300">Active Products</h3>
-            <p style={cardStatStyle} className="dark:text-white">{loading ? '...' : activeProducts.length}</p>
+            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Products</h3>
+            <p style={cardStatStyle} className="dark:text-white">{loading ? '...' : products.length}</p>
           </div>
           <div style={cardStyle} className="dark:bg-gray-700">
-            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Stocks (Active)</h3>
+            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Stocks</h3>
             <p style={cardStatStyle} className="dark:text-white">{loading ? '...' : totalStock.toLocaleString('id-ID')}</p>
           </div>
           <div style={cardStyle} className="dark:bg-gray-700">
@@ -186,11 +181,9 @@ const ManageProductsPage = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <Link href={`/admin/dashboard/products/edit/${product.id}`} style={{ fontWeight: 500, color: '#2563eb', textDecoration: 'underline', marginRight: '1rem' }}>Edit</Link>
-                    {product.status === 'ACTIVE' ? (
-                       <button onClick={() => handleUpdateStatus(product.id, 'ACTIVE')} style={{ fontWeight: 500, color: '#eab308', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>Archive</button>
-                    ) : (
-                       <button onClick={() => handleUpdateStatus(product.id, 'ARCHIVED')} style={{ fontWeight: 500, color: '#22c55e', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>Activate</button>
-                    )}
+                    <button onClick={() => handleUpdateStatus(product.id, product.status)} style={{ fontWeight: 500, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', color: product.status === 'ACTIVE' ? '#eab308' : '#22c55e' }}>
+                      {product.status === 'ACTIVE' ? 'Archive' : 'Activate'}
+                    </button>
                   </td>
                 </tr>
               ))}

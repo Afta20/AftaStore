@@ -77,12 +77,14 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
+    // `.partial()` membuat semua field di skema menjadi opsional, cocok untuk update
     const validatedData = productUpdateSchema.partial().parse(body);
 
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data: {
         ...validatedData,
+        // Logika khusus untuk menghubungkan atau memutuskan hubungan kategori
         ...(validatedData.categoryId !== undefined && {
             category: validatedData.categoryId 
                 ? { connect: { id: validatedData.categoryId } } 
@@ -102,39 +104,7 @@ export async function PUT(req: NextRequest) {
 
 
 /**
- * DELETE: Melakukan "soft delete" dengan mengubah status produk menjadi ARCHIVED.
- * Ini adalah fungsi yang dipanggil saat admin menekan tombol "Delete" di frontend.
- */
-export async function DELETE(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (session?.user?.role !== 'admin') {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-    }
-
-    const productId = getProductIdFromRequest(req);
-    if (!productId) {
-      return NextResponse.json({ message: 'Product ID is missing' }, { status: 400 });
-    }
-
-    await prisma.product.update({
-      where: { id: productId },
-      data: { status: 'ARCHIVED' },
-    });
-
-    return NextResponse.json({ message: 'Product archived successfully' }, { status: 200 });
-  } catch (error: any) {
-    console.error(`[ARCHIVE_PRODUCT_ERROR]`, error);
-    if (error.code === 'P2025') {
-      return NextResponse.json({ message: 'Product not found.' }, { status: 404 });
-    }
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
-  }
-}
-
-/**
- * PATCH: Mengubah status produk menjadi ACTIVE.
- * Ini adalah fungsi yang dipanggil saat admin menekan tombol "Activate".
+ * PATCH: Mengubah status produk (mengarsipkan atau mengaktifkan kembali).
  */
 export async function PATCH(req: NextRequest) {
   try {
@@ -148,17 +118,25 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ message: 'Product ID is missing.' }, { status: 400 });
     }
 
-    await prisma.product.update({
+    const body = await req.json();
+    const { status } = body;
+
+    // Validasi bahwa status yang dikirim adalah salah satu dari dua nilai yang diizinkan
+    if (!status || (status !== 'ACTIVE' && status !== 'ARCHIVED')) {
+      return NextResponse.json({ message: 'Invalid status. Must be ACTIVE or ARCHIVED.' }, { status: 400 });
+    }
+
+    const updatedProduct = await prisma.product.update({
       where: { id: productId },
-      data: { status: 'ACTIVE' },
+      data: { status: status },
     });
 
-    return NextResponse.json({ message: 'Product activated successfully' }, { status: 200 });
+    return NextResponse.json(updatedProduct, { status: 200 });
   } catch (error: any) {
      if (error.code === 'P2025') {
       return NextResponse.json({ message: 'Error: Product not found.' }, { status: 404 });
     }
-    console.error(`[ACTIVATE_PRODUCT_ERROR]`, error);
+    console.error(`[PATCH_PRODUCT_ERROR]`, error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
