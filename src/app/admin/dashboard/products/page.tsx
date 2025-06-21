@@ -1,7 +1,7 @@
 // File: src/app/admin/dashboard/products/page.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Pie } from 'react-chartjs-2';
 import {
@@ -39,8 +39,7 @@ const ManageProductsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [categoryDistribution, setCategoryDistribution] = useState<CategoryDistributionChartData | null>(null);
 
-  // Fungsi untuk mengambil SEMUA produk (termasuk yang diarsipkan)
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -55,16 +54,18 @@ const ManageProductsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // === DIKEMBALIKAN: Memproses semua produk untuk chart, bukan hanya yang aktif ===
-  const processCategoryData = (productList: Product[]) => {
-    if (productList.length === 0) {
-      setCategoryDistribution({ labels: [], counts: [] });
-      return;
-    }
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  // Memproses data untuk chart
+  const processCategoryData = useCallback((productList: Product[]) => {
+    // Grafik HANYA menghitung produk yang statusnya ACTIVE
+    const activeProducts = productList.filter(p => p.status === 'ACTIVE');
     const counts: { [key: string]: number } = {};
-    productList.forEach(product => {
+    activeProducts.forEach(product => {
       const catName = product.category?.name || 'Uncategorized';
       counts[catName] = (counts[catName] || 0) + 1;
     });
@@ -72,39 +73,37 @@ const ManageProductsPage = () => {
       labels: Object.keys(counts),
       counts: Object.values(counts),
     });
-  };
-
-  useEffect(() => {
-    fetchProducts();
   }, []);
 
   useEffect(() => {
     if (!loading) {
       processCategoryData(products);
     }
-  }, [products, loading]);
+  }, [products, loading, processCategoryData]);
 
-  // Fungsi untuk mengarsipkan (soft delete) atau mengaktifkan produk
-  const handleUpdateStatus = async (productId: string, currentStatus: string) => {
+  // Fungsi untuk update status (Arsip & Aktifkan)
+  const handleUpdateStatus = useCallback(async (productId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'ACTIVE' ? 'ARCHIVED' : 'ACTIVE';
     const action = newStatus === 'ARCHIVED' ? 'archive' : 'activate';
 
     if (window.confirm(`Are you sure you want to ${action} this product?`)) {
       try {
         const response = await fetch(`/api/admin/products/${productId}`, {
-          method: 'PATCH', // Menggunakan PATCH untuk update
+          method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: newStatus }),
         });
         if (!response.ok) throw new Error(`Failed to ${action} product.`);
+        
         alert(`Product ${action}d successfully.`);
-        fetchProducts(); // Refresh data
+        fetchProducts(); // Refresh data setelah berhasil
       } catch (err: any) {
         alert(`Error: ${err.message}`);
       }
     }
-  };
-  
+  }, [fetchProducts]);
+
+  // Data dan Opsi Pie Chart dari kode Anda
   const categoryPieData = categoryDistribution ? {
     labels: categoryDistribution.labels,
     datasets: [{
@@ -115,17 +114,12 @@ const ManageProductsPage = () => {
       borderWidth: 2,
     }],
   } : null;
+  const categoryPieOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' as const }, title: { display: true, text: 'Active Product Distribution' }}};
 
-  const categoryPieOptions = {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'top' as const },
-      title: { display: true, text: 'Product Distribution by Category' },
-    },
-  };
-
-  // === DIKEMBALIKAN: Kalkulasi statistik untuk SEMUA produk ===
-  const totalStock = products.reduce((acc, product) => acc + (product.stock || 0), 0);
+  // === PERBAIKAN LOGIKA STATISTIK ===
+  // Filter produk yang aktif untuk dihitung di statistik
+  const activeProducts = products.filter(p => p.status === 'ACTIVE');
+  const totalStock = activeProducts.reduce((acc, product) => acc + (product.stock || 0), 0);
   const uniqueCategoriesCount = categoryDistribution?.labels.length ?? 0;
 
   const cardStyle: React.CSSProperties = { padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)', textAlign: 'center' };
@@ -146,11 +140,11 @@ const ManageProductsPage = () => {
         <h2 className="text-xl font-semibold text-gray-700 dark:text-white mb-6 text-center">Product Overview</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-8">
           <div style={cardStyle} className="dark:bg-gray-700">
-            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Products</h3>
-            <p style={cardStatStyle} className="dark:text-white">{loading ? '...' : products.length}</p>
+            <h3 style={cardTitleStyle} className="dark:text-gray-300">Active Products</h3>
+            <p style={cardStatStyle} className="dark:text-white">{loading ? '...' : activeProducts.length}</p>
           </div>
           <div style={cardStyle} className="dark:bg-gray-700">
-            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Stocks</h3>
+            <h3 style={cardTitleStyle} className="dark:text-gray-300">Total Stocks (Active)</h3>
             <p style={cardStatStyle} className="dark:text-white">{loading ? '...' : totalStock.toLocaleString('id-ID')}</p>
           </div>
           <div style={cardStyle} className="dark:bg-gray-700">
@@ -177,7 +171,7 @@ const ManageProductsPage = () => {
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr key={product.id} className={`border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${product.status !== 'ACTIVE' && 'opacity-60 bg-gray-50 dark:bg-gray-800/50'}`}>
+                <tr key={product.id} className={`border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-opacity ${product.status !== 'ACTIVE' && 'opacity-50'}`}>
                   <td className="px-6 py-4">
                     <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
                       {product.imagePreviews && product.imagePreviews.length > 0 ? (<Image src={product.imagePreviews[0]} alt={product.title} width={48} height={48} className="object-cover rounded" />) : <FiImage className="text-gray-400"/>}
@@ -193,9 +187,9 @@ const ManageProductsPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <Link href={`/admin/dashboard/products/edit/${product.id}`} style={{ fontWeight: 500, color: '#2563eb', textDecoration: 'underline', marginRight: '1rem' }}>Edit</Link>
                     {product.status === 'ACTIVE' ? (
-                       <button onClick={() => handleUpdateStatus(product.id, 'ARCHIVED')} style={{ fontWeight: 500, color: '#eab308', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>Archive</button>
+                       <button onClick={() => handleUpdateStatus(product.id, 'ACTIVE')} style={{ fontWeight: 500, color: '#eab308', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>Archive</button>
                     ) : (
-                       <button onClick={() => handleUpdateStatus(product.id, 'ACTIVE')} style={{ fontWeight: 500, color: '#22c55e', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>Activate</button>
+                       <button onClick={() => handleUpdateStatus(product.id, 'ARCHIVED')} style={{ fontWeight: 500, color: '#22c55e', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>Activate</button>
                     )}
                   </td>
                 </tr>
