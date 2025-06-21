@@ -1,9 +1,16 @@
+// File: src/app/shop-without-sidebar/page.tsx
+
 import React from "react";
-import Breadcrumb from "@/components/Common/Breadcrumb"; 
-import ShopControls from "@/components/ShopWithoutSidebar/ShopControls";      
+import Breadcrumb from "@/components/Common/Breadcrumb";
+import ShopControls from "@/components/ShopWithoutSidebar/ShopControls";
 import prisma from "@/lib/prisma";
 import { Metadata } from "next";
 import { Product } from "@/types/product";
+
+// === PERBAIKAN 1: MEMAKSA HALAMAN MENJADI DINAMIS ===
+// Baris ini memberitahu Next.js untuk tidak menyimpan cache halaman ini
+// dan selalu mengambil data baru dari server setiap kali diakses.
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "Aftastore | Shop Without Sidebar Page",
@@ -17,14 +24,15 @@ interface PageProps {
   };
 }
 
-// Semua logika sekarang ada di dalam satu komponen async ini
 const ShopWithoutSidebarPage = async ({ searchParams }: PageProps) => {
   const query = searchParams?.query?.toLowerCase() || "";
   const categoryId = searchParams?.category;
 
-  const whereClause: any = {};
+  // === PERBAIKAN 2: TAMBAHKAN FILTER STATUS DI SINI ===
+  const whereClause: any = {
+    status: 'ACTIVE', // Hanya cari produk yang statusnya AKTIF
+  };
 
-  // Pastikan 'title' adalah nama field yang benar di schema.prisma Anda
   if (query) {
     whereClause.title = {
       contains: query,
@@ -32,25 +40,31 @@ const ShopWithoutSidebarPage = async ({ searchParams }: PageProps) => {
     };
   }
 
-  // Pastikan 'categoryId' adalah nama field yang benar di schema.prisma
   if (categoryId && !isNaN(parseInt(categoryId)) && parseInt(categoryId) !== 0) {
     whereClause.categoryId = parseInt(categoryId);
   }
 
   const productsFromDB = await prisma.product.findMany({
-    where: whereClause,
+    where: whereClause, // Gunakan klausa where yang sudah lengkap
+    // Pastikan select menyertakan semua data yang dibutuhkan oleh ShopControls
     select: {
       id: true,
-      title: true, // atau 'name' jika itu yang benar
+      title: true,
       price: true,
       discountedPrice: true,
       imagePreviews: true,
       reviews: true,
       stock: true,
+      status: true,
+      category: {
+        select: {
+            name: true,
+        }
+      }
     },
   });
 
-  // Solusi untuk error 'Decimal objects are not supported'
+  // Konversi tipe Decimal
   const serializableProducts = productsFromDB.map(product => ({
     ...product,
     price: product.price.toNumber(),
@@ -79,7 +93,6 @@ const ShopWithoutSidebarPage = async ({ searchParams }: PageProps) => {
           <div className="flex gap-7.5">
             <div className="w-full">
               {getResultMessage()}
-              {/* ShopControls tetap dipanggil, karena ia adalah komponen Client */}
               <ShopControls products={serializableProducts as Product[]} />
             </div>
           </div>
