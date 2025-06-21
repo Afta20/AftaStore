@@ -174,11 +174,6 @@ const EditProductPage = () => {
                 <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleInputChange} required style={inputStyle} />
             </div>
         </div>
-
-        <div>
-          <label htmlFor="imagePreviews" style={labelStyle}>URL Image:</label>
-          <input type="text" id="imagePreviews" name="imagePreviews" value={formData.imagePreviews} onChange={handleInputChange} placeholder="contoh: /url1.jpg, /url2.jpg" style={inputStyle} />
-        </div>
         <div>
           <label htmlFor="description" style={labelStyle}>Description (Optional):</label>
           <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} rows={5} style={inputStyle} />
