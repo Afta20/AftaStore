@@ -150,9 +150,7 @@ const EditProductPage = () => {
     <div className="p-4 md:p-6 lg:p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-white">Edit Product</h1>
-        <Link href="/admin/dashboard/products" className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors text-sm font-medium">
-          Back
-        </Link>
+        <Link href="/admin/dashboard/products" style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', borderRadius: '0.375rem', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}>Back </Link>
       </div>
 
       {error && <p className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">Error: {error}</p>}
