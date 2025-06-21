@@ -5,24 +5,22 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 
-// ... (interface Category dan ProductFormData tetap sama) ...
+// Definisikan tipe untuk Kategori dan Produk
 interface Category {
   id: string;
   name: string;
 }
 
+// HAPUS: `imagePreviews` dihapus dari interface form data
 interface ProductFormData {
   title: string;
   price: string;
   stock: string;
-  imagePreviews: string; // Tetap sebagai string untuk form
   description: string;
   categoryId: string;
 }
 
-
 const EditProductPage = () => {
-    // ... (semua state dan hooks tetap sama) ...
   const router = useRouter();
   const params = useParams();
   const productId = params.id as string;
@@ -31,18 +29,17 @@ const EditProductPage = () => {
     title: '',
     price: '',
     stock: '',
-    imagePreviews: '',
+    // HAPUS: `imagePreviews` dihapus dari state awal
     description: '',
     categoryId: '',
   });
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    // ... (useEffect dan handler lainnya tidak perlu diubah) ...
   useEffect(() => {
     const fetchInitialData = async () => {
       if (!productId) {
@@ -69,8 +66,7 @@ const EditProductPage = () => {
           title: productData.title || '',
           price: productData.price?.toString() || '0',
           stock: productData.stock?.toString() || '0',
-          // Logika ini sudah benar untuk mengubah array menjadi string
-          imagePreviews: productData.imagePreviews?.join(', ') || '', 
+          // HAPUS: `imagePreviews` tidak lagi diisi ke dalam form state
           description: productData.description || '',
           categoryId: productData.categoryId || '',
         });
@@ -103,12 +99,12 @@ const EditProductPage = () => {
       return;
     }
 
-    // Logika ini sudah benar untuk mengubah string kembali menjadi array
+    // DIUBAH: Buat objek data baru tanpa menyertakan `imagePreviews`
     const updatedProductData = {
-      ...formData,
+      title: formData.title,
+      description: formData.description,
       price: parseFloat(formData.price),
       stock: parseInt(formData.stock, 10),
-      imagePreviews: formData.imagePreviews.split(',').map(url => url.trim()).filter(url => url),
       categoryId: formData.categoryId || null,
     };
 
@@ -116,7 +112,7 @@ const EditProductPage = () => {
       const response = await fetch(`/api/admin/products/${productId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedProductData),
+        body: JSON.stringify(updatedProductData), // Kirim data yang sudah bersih
       });
 
       if (!response.ok) {
@@ -135,7 +131,6 @@ const EditProductPage = () => {
     }
   };
 
-
   if (loadingInitial) {
     return <div className="p-8 text-center">Loading...</div>;
   }
@@ -146,14 +141,13 @@ const EditProductPage = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      {/* ... (Header dan messages tetap sama) ... */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-white">Edit Product</h1>
         <Link href="/admin/dashboard/products" style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', borderRadius: '0.375rem', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}>Back </Link>
       </div>
+
       {error && <p className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">Error: {error}</p>}
       {successMessage && <p className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">{successMessage}</p>}
-
 
       <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-lg shadow-md space-y-6">
         <div>
@@ -171,21 +165,8 @@ const EditProductPage = () => {
                 <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleInputChange} required style={inputStyle} />
             </div>
         </div>
-
-        {/* --- TAMBAHKAN BLOK INI --- */}
-        <div>
-          <label htmlFor="imagePreviews" style={labelStyle}>Image URLs (pisahkan dengan koma):</label>
-          <textarea 
-            id="imagePreviews" 
-            name="imagePreviews" 
-            value={formData.imagePreviews} 
-            onChange={handleInputChange} 
-            rows={3}
-            style={inputStyle} 
-            placeholder="Contoh: https://example.com/image1.jpg, https://example.com/image2.png"
-          />
-        </div>
-        {/* --- AKHIR BLOK TAMBAHAN --- */}
+        
+        {/* HAPUS: Seluruh blok div untuk input URL gambar telah dihapus dari sini */}
 
         <div>
           <label htmlFor="description" style={labelStyle}>Description (Optional):</label>
