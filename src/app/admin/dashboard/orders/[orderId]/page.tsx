@@ -126,8 +126,8 @@ const OrderDetailsPage = () => {
         </div>
         <Link
           href="/admin/dashboard/orders"
-          style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', borderRadius: '0.375rem', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}>B
-          <FiArrowLeft size={18} />
+          style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', borderRadius: '0.375rem', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500 }}>
+          <FiArrowLeft size={18} /> 
           Back to All Orders
         </Link>
       </div>
