@@ -80,18 +80,6 @@ const MyAccount = () => {
                       </svg>
                       Dashboard
                     </button>
-                    <button onClick={() => setActiveTab("orders")} className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white ${ activeTab === "orders" ? "text-white bg-blue" : "text-dark-2 bg-gray-1" }`} >
-                      <svg className="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" >
-                        <path d="M8.0203 11.9167C8.0203 11.537... (SVG code) ...73071Z" fill=""/>
-                      </svg>
-                      Orders
-                    </button>
-                    <button onClick={() => setActiveTab("downloads")} className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white ${ activeTab === "downloads" ? "text-white bg-blue" : "text-dark-2 bg-gray-1" }`}>
-                      <svg className="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" >
-                        <path d="M11.5074 15.1306C11.3772 15.273... (SVG code) ...75Z" fill=""/>
-                      </svg>
-                      Downloads
-                    </button>
                     <button onClick={() => setActiveTab("addresses")} className={`flex items-center rounded-md gap-2.5 py-3 px-4.5 ease-out duration-200 hover:bg-blue hover:text-white ${ activeTab === "addresses" ? "text-white bg-blue" : "text-dark-2 bg-gray-1" }`} >
                       <svg className="fill-current" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" >
                         <path d="M8.25065 15.8125C7.87096 15.8125... (SVG code) ...4.12875Z" fill=""/>
