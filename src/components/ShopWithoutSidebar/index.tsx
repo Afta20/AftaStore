@@ -16,9 +16,7 @@ const ShopWithoutSidebarComponent = async ({ query, category }: ComponentProps) 
   const lowerCaseQuery = query?.toLowerCase() || "";
   const categoryId = category;
 
-  // === PERBAIKAN UTAMA DI SINI ===
   const whereClause: any = {
-    // Tambahkan kondisi WAJIB: produk harus berstatus ACTIVE
     status: 'ACTIVE',
   };
 
